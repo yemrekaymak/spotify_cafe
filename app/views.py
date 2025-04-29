@@ -83,6 +83,9 @@ def add_to_queue(request):
             return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
 
         return JsonResponse({"message": "Şarkı çalma sırasına eklendi!"})
+    
+    # GET veya diğer HTTP metotları için yanıt
+    return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
 
 
 # Şarkı arama view
