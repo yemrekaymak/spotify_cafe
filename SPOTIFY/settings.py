@@ -140,3 +140,5 @@ SPOTIFY_REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+CORS_ALLOW_ALL_ORIGINS = True
+
