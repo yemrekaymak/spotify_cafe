@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arama Sonuçları</title>
+</head>
+<body>
+    <h1>🔍 Arama Sonuçları</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% elif tracks %}
+        <ul>
+            {% for track in tracks %}
+                <li>
+                    {{ track.name }} - {{ track.artists.0.name }}
+                    <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>🚨 Şarkı bulunamadı. Lütfen farklı bir terimle arama yapın.</p>
+    {% endif %}
+
+    <script>
+        function playSong(uri) {
+            const userData = JSON.parse(localStorage.getItem('spotify_user_data'));
+            if (userData) {
+                fetch('https://api.spotify.com/v1/me/player/play', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + userData.access_token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uris: [uri] })
+                }).then(response => {
+                    if (response.ok) {
+                        alert("🎵 Şarkı oynatılıyor!");
+                    } else {
+                        alert("Spotify çalar aktif değil. Lütfen Spotify'ı açın.");
+                    }
+                });
+            } else {
+                alert("Lütfen önce Spotify ile giriş yapın.");
+            }
+        }
+    </script>
+
+    <script>
+        async function addToQueue(trackUri) {
+            const response = await fetch('/add-to-queue/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ track_uri: trackUri })
+            });
+
+            const result = await response.json();
+            if (result.message) {
+                alert(result.message);
+            } else {
+                alert(result.error);
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    padding: 10px;
+    font-family: 'Inter', sans-serif;
+    background-color: #000;
+    color: #E0E0E0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    background: #121212;
+    border-radius: 15px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#search-section {
+    flex: 1; /* Sol taraf */
+    background-color: #121212;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+#results-section {
+    flex: 2; /* Sağ taraf */
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+    font-size: 2em;
+    color: #1DB954;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+a, button {
+    background: linear-gradient(135deg, #1DB954, #1ed760);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    margin: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 5px 15px rgba(29, 185, 84, 0.3);
+}
+
+a:hover, button:hover {
+    background: linear-gradient(135deg, #1ed760, #1DB954);
+    transform: scale(1.08);
+    box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.5);
+}
+
+input {
+    padding: 14px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 50px;
+    border: 2px solid #1DB954;
+    background-color: #1a1a1a;
+    color: white;
+    outline: none;
+    font-size: 1em;
+    transition: all 0.3s ease-in-out;
+}
+
+input:focus {
+    border-color: #1DB954;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #1DB954;
+    border-radius: 5px;
+    background-color: #000;
+    color: #fff;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+li {
+    background: #181818;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+li:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #181818;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#spotify-player {
+    width: 100%;
+    max-width: 380px;
+    height: 100px;
+    background: linear-gradient(135deg, #1DB954, #1ed760);
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto;
+    border-radius: 0 15px 0 0;
+    display: none;
+    box-shadow: 0px 6px 15px rgba(29, 185, 84, 0.4);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+h3{
+    margin-top: 10px;
+}
+
+p:nth-of-type(1){
+    margin: 20px 0;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 sütun */
+    gap: 20px; /* Hücreler arası boşluk */
+    margin-top: 20px;
+}
+
+.artist-card {
+    background-color: #1DB954;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.artist-card button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.artist-card button:hover {
+    background-color: #333;
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Arama Sonuçları</title>
+    <link rel="stylesheet" href="{% static 'css/spotify.css' %}">
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .artist-card {
+            background-color: #1DB954;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .artist-card button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .artist-card button:hover {
+            background-color: #333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .left-section {
+            flex: 1;
+            background-color: #121212;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-section {
+            flex: 2;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #181818;
+            border-radius: 5px;
+        }
+
+        .result-item button {
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .result-item button:hover {
+            background-color: #1ed760;
+        }
+    </style>
+</head>
+<body>
+    {% if not request.session.spotify_access_token %}
+        <script>
+            window.location.href = "{% url 'giris_yap' %}";
+        </script>
+    {% endif %}
+
+    {% if request.session.spotify_access_token %}
+        <p>🎉 Spotify'a giriş yapıldı!</p>
+    {% else %}
+        <a href="{% url 'giris_yap' %}">🎵 Spotify ile Giriş Yap</a>
+    {% endif %}
+
+    <form id="search-form" onsubmit="search(event)">
+        <input type="text" id="search-input" name="q" placeholder="Şarkı veya sanatçı arayın..." value="{{ request.GET.q }}">
+        <button type="submit">🔍 Ara</button>
+    </form>
+
+    <div class="container">
+        <div class="left-section">
+            <h1>🎵 Spotify Bölümleri</h1>
+            <ul>
+                <li><a href="#">Top 5 Şarkılar</a></li>
+                <li><a href="#">Top 5 Sanatçılar</a></li>
+            </ul>
+        </div>
+
+        <div class="right-section">
+            <h2>🔍 Arama Sonuçları</h2>
+
+            <div class="search-results" id="search-results">
+                {% if tracks %}
+                    <ul>
+                        {% for track in tracks %}
+                        <li class="result-item" data-uri="{{ track.uri }}">
+                            {{ track.name }} - {{ track.artists.0.name }}
+                            <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>🚨 Şarkı bulunamadı.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/spotify.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const trimmed = cookie.trim();
+                    if (trimmed.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function addToQueue(trackUri) {
+            const csrftoken = getCookie('csrftoken');
+            const response = await fetch('/add-to-queue/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ track_uri: trackUri })
+            });
+
+            const result = await response.json();
+            if (result.message) {
+                alert(result.message);
+            } else {
+                alert(result.error);
+            }
+        }
+
+        function search(event) {
+            event.preventDefault();
+            const query = document.getElementById('search-input').value;
+
+            $.ajax({
+                url: "{% url 'arama_sonuclari' %}",
+                data: { q: query },
+                success: function(response) {
+                    $('#search-results').html(response);
+                },
+                error: function() {
+                    alert('Arama sırasında bir hata oluştu!');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
