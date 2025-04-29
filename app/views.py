@@ -53,6 +53,7 @@ def callback(request):
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
+@csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
         access_token = request.session.get('spotify_access_token')
