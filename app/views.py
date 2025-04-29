@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 CLIENT_ID = "75b0577d87af4f3e869017902eba769d"
 CLIENT_SECRET = "8824e08491e84b17bdcf98d26c75dd9a"
-REDIRECT_URI = 'http://localhost:8000/callback/'
+REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'
 
 # Ana sayfa view
 def home(request):
