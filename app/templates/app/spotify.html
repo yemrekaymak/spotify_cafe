@@ -82,6 +82,11 @@
         .result-item button:hover {
             background-color: #1ed760;
         }
+
+        .result-item button:disabled {
+            background-color: #4CAF50; /* Yeşil renk */
+            cursor: not-allowed; /* İşaretçi değişimi */
+        }
     </style>
 </head>
 <body>
@@ -151,6 +156,8 @@
 
         async function addToQueue(trackUri) {
     const csrftoken = getCookie('csrftoken'); // CSRF token'ı al
+    const button = document.querySelector(`button[onclick="addToQueue('${trackUri}')"]`); // İlgili butonu seç
+
     const response = await fetch('/add-to-queue/', {
         method: 'POST',
         headers: {
@@ -162,9 +169,13 @@
 
     const result = await response.json();
     if (result.message) {
+        // Başarılı mesajı göster ve butonu güncelle
         alert(result.message);
+        button.innerHTML = '✔️ Eklendi'; // Butonun içeriğini değiştir
+        button.disabled = true; // Butonu devre dışı bırak
+        button.style.backgroundColor = '#4CAF50'; // Buton rengini değiştir
     } else {
-        alert(result.error);
+        alert(result.error); // Hata mesajını göster
     }
 }
 
