@@ -120,7 +120,7 @@
                         {% for track in tracks %}
                         <li class="result-item" data-uri="{{ track.uri }}">
                             {{ track.name }} - {{ track.artists.0.name }}
-                            <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button>
+                            <button onclick="addToQueue('{{ track.uri }}', this)">➕ Çalma Sırasına Ekle</button>
                         </li>
                         {% endfor %}
                     </ul>
@@ -135,38 +135,51 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            const trimmed = cookie.trim();
-            if (trimmed.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
-                break;
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const trimmed = cookie.trim();
+                    if (trimmed.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-    }
-    return cookieValue;
-}
 
-        async function addToQueue(trackUri) {
-    const csrftoken = getCookie('csrftoken'); // CSRF token'ı al
-    const response = await fetch('/add-to-queue/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken // CSRF token'ı header'a ekle
-        },
-        body: JSON.stringify({ track_uri: trackUri }) // Şarkı URI'sini gönder
-    });
+        async function addToQueue(trackUri, buttonElement) {
+            const csrftoken = getCookie('csrftoken');
+            const originalHTML = buttonElement.innerHTML;
 
-    const result = await response.json();
-    if (result.message) {
-        alert(result.message);
-    } else {
-        alert(result.error);
-    }
-}
+            // Gönder
+            const response = await fetch('/add-to-queue/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ track_uri: trackUri })
+            });
+
+            const result = await response.json();
+
+            // ✔️ veya ❌ göster
+            if (result.message) {
+                buttonElement.innerHTML = '✅';
+            } else {
+                buttonElement.innerHTML = '❌';
+            }
+
+            buttonElement.disabled = true;
+
+            // 2 saniye sonra eski haline dön
+            setTimeout(() => {
+                buttonElement.innerHTML = originalHTML;
+                buttonElement.disabled = false;
+            }, 2000);
+        }
 
         function search(event) {
             event.preventDefault();
