@@ -150,40 +150,23 @@
         }
 
         async function addToQueue(trackUri) {
-            const csrftoken = getCookie('csrftoken');
-            const button = document.querySelector(`button[onclick="addToQueue('${trackUri}')"]`);
+        alert("🎵 Çalma sırasına ekleniyor...");  // Tuşa basınca hemen alert görünsün
 
-            console.log("Şarkı URI'si:", trackUri); // Şarkı URI'sini kontrol et
-            console.log("CSRF Token:", csrftoken); // CSRF token'ı kontrol et
+        const response = await fetch('/add-to-queue/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ track_uri: trackUri })
+        });
 
-            try {
-                const response = await fetch('/add-to-queue/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({ track_uri: trackUri })
-                });
-
-                console.log("Sunucudan gelen yanıt:", response); // Sunucu yanıtını kontrol et
-
-                const result = await response.json();
-                console.log("Sunucudan gelen JSON:", result); // JSON yanıtını kontrol et
-
-                if (response.ok && result.message) {
-                    alert("✅ Şarkı başarıyla çalma listesine eklendi!");
-                    button.innerHTML = '✔️ Eklendi';
-                    button.disabled = true;
-                    button.style.backgroundColor = '#4CAF50';
-                } else {
-                    alert("❌ Bir hata oluştu: " + (result.error || "Bilinmeyen hata"));
-                }
-            } catch (error) {
-                console.error("Fetch isteği sırasında hata:", error); // Fetch hatalarını kontrol et
-                alert("❌ Bir hata oluştu: " + error.message);
-            }
-        }
+        const result = await response.json();
+        if (result.message) {
+            alert(result.message);  // Başarı mesajı
+        } else {
+            alert(result.error);  // Hata mesajı
+      
 
         function search(event) {
             event.preventDefault();
