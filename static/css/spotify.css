@@ -197,8 +197,23 @@ p:nth-of-type(1) {
         padding: 10px;
     }
 
+    h2 {
+        font-size: 1.5em;
+    }
+
+    a, button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
     #search-section, #results-section {
         width: 100%;
+        padding: 15px;
     }
 
     ul {
@@ -208,7 +223,8 @@ p:nth-of-type(1) {
     li {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
+        padding: 10px;
     }
 
     #spotify-player {
@@ -219,6 +235,16 @@ p:nth-of-type(1) {
     }
 
     .grid-container {
-        grid-template-columns: repeat(1, 1fr);
+        grid-template-columns: 1fr;
+    }
+
+    .artist-card {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    .artist-card button {
+        padding: 8px 12px;
+        font-size: 0.85em;
     }
 }
