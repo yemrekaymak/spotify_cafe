@@ -192,28 +192,32 @@ p:nth-of-type(1) {
 
 /* Mobil uyum için */
 @media (max-width: 768px) {
+    body {
+        font-size: 0.8em;
+    }
+
     .container {
         flex-direction: column;
-        padding: 10px;
+        padding: 8px;
     }
 
     h2 {
-        font-size: 1.5em;
+        font-size: 1.6em;
     }
 
     a, button {
-        padding: 10px 20px;
-        font-size: 0.9em;
+        padding: 8px 20px;
+        font-size: 0.8em;
     }
 
     input {
         padding: 10px;
-        font-size: 0.9em;
+        font-size: 0.8em;
     }
 
     #search-section, #results-section {
         width: 100%;
-        padding: 15px;
+        padding: 12px;
     }
 
     ul {
@@ -223,28 +227,31 @@ p:nth-of-type(1) {
     li {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
-        padding: 10px;
+        gap: 6px;
+        padding: 8px;
+        font-size: 0.85em;
     }
 
     #spotify-player {
         flex-direction: column;
         height: auto;
-        padding: 10px;
+        padding: 8px;
         text-align: center;
+        font-size: 0.9em;
     }
 
     .grid-container {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .artist-card {
-        padding: 10px;
-        font-size: 0.9em;
+        padding: 8px;
+        font-size: 0.8em;
     }
 
     .artist-card button {
-        padding: 8px 12px;
-        font-size: 0.85em;
+        padding: 6px 10px;
+        font-size: 0.75em;
     }
 }
