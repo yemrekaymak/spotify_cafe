@@ -53,40 +53,40 @@ def callback(request):
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
-# Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
+        print("POST isteği alındı.")  # Hata ayıklama için log
         access_token = request.session.get('spotify_access_token')
         if not access_token:
+            print("Access token eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
         try:
-            data = json.loads(request.body)  # JSON verisini parse et
+            data = json.loads(request.body)
             track_uri = data.get('track_uri')
+            print("Alınan track_uri:", track_uri)  # Hata ayıklama için log
         except json.JSONDecodeError:
+            print("Geçersiz JSON verisi.")  # Hata ayıklama için log
             return JsonResponse({"error": "Geçersiz JSON verisi."}, status=400)
 
         if not track_uri:
+            print("Şarkı URI'si eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Şarkı URI'si eksik."}, status=400)
 
-        # URI'nin doğru formatta olup olmadığını kontrol et
-        if not track_uri.startswith('spotify:track:'):
-            return JsonResponse({"error": "Geçersiz şarkı URI'si. Spotify URI formatı gereklidir."}, status=400)
-
-        # Spotify API isteğini gönder
         headers = {'Authorization': f'Bearer {access_token}'}
         queue_url = f'https://api.spotify.com/v1/me/player/queue?uri={track_uri}'
         response = requests.post(queue_url, headers=headers)
 
-        # Hata mesajını konsola yazdır
+        print("Spotify API yanıtı:", response.status_code, response.text)  # Hata ayıklama için log
+
         if response.status_code != 204:
             error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
             return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
 
         return JsonResponse({"message": "Şarkı çalma sırasına eklendi!"})
-    
-    # GET veya diğer HTTP metotları için yanıt
+
+    print("GET isteği alındı.")  # Hata ayıklama için log
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
 
 

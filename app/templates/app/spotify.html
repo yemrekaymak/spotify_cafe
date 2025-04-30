@@ -151,6 +151,10 @@
 
         async function addToQueue(trackUri) {
             const csrftoken = getCookie('csrftoken');
+            const button = document.querySelector(`button[onclick="addToQueue('${trackUri}')"]`);
+
+            console.log("Şarkı URI'si:", trackUri); // Şarkı URI'sini kontrol et
+            console.log("CSRF Token:", csrftoken); // CSRF token'ı kontrol et
 
             try {
                 const response = await fetch('/add-to-queue/', {
@@ -162,14 +166,21 @@
                     body: JSON.stringify({ track_uri: trackUri })
                 });
 
+                console.log("Sunucudan gelen yanıt:", response); // Sunucu yanıtını kontrol et
+
                 const result = await response.json();
+                console.log("Sunucudan gelen JSON:", result); // JSON yanıtını kontrol et
 
                 if (response.ok && result.message) {
                     alert("✅ Şarkı başarıyla çalma listesine eklendi!");
+                    button.innerHTML = '✔️ Eklendi';
+                    button.disabled = true;
+                    button.style.backgroundColor = '#4CAF50';
                 } else {
                     alert("❌ Bir hata oluştu: " + (result.error || "Bilinmeyen hata"));
                 }
             } catch (error) {
+                console.error("Fetch isteği sırasında hata:", error); // Fetch hatalarını kontrol et
                 alert("❌ Bir hata oluştu: " + error.message);
             }
         }
