@@ -151,32 +151,33 @@
 
         async function addToQueue(trackUri, buttonElement) {
             const csrftoken = getCookie('csrftoken');
-            const originalHTML = buttonElement.innerHTML;
-
-            // Gönder
-            const response = await fetch('/add-to-queue/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ track_uri: trackUri })
-            });
-
-            const result = await response.json();
-
-            // ✔️ veya ❌ göster
-            if (result.message) {
-                buttonElement.innerHTML = '✅';
-            } else {
-                buttonElement.innerHTML = '❌';
-            }
+            const originalText = buttonElement.innerHTML;
 
             buttonElement.disabled = true;
 
-            // 2 saniye sonra eski haline dön
+            try {
+                const response = await fetch('/add-to-queue/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ track_uri: trackUri })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.message) {
+                    buttonElement.innerHTML = '✅ Eklendi!';
+                } else {
+                    buttonElement.innerHTML = '❌ Hata!';
+                }
+            } catch (error) {
+                buttonElement.innerHTML = '❌ Hata!';
+            }
+
             setTimeout(() => {
-                buttonElement.innerHTML = originalHTML;
+                buttonElement.innerHTML = originalText;
                 buttonElement.disabled = false;
             }, 2000);
         }
