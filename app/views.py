@@ -53,6 +53,7 @@ def callback(request):
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
+# Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
@@ -87,6 +88,7 @@ def add_to_queue(request):
     
     # GET veya diğer HTTP metotları için yanıt
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
+
 
 
 # Şarkı arama view
