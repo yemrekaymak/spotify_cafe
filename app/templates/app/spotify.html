@@ -135,22 +135,22 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let cookie of cookies) {
-                    const trimmed = cookie.trim();
-                    if (trimmed.startsWith(name + '=')) {
-                        cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
-                        break;
-                    }
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const trimmed = cookie.trim();
+                if (trimmed.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
+        return cookieValue;
+    }
 
-        async function addToQueue(trackUri) {
-        alert("🎵 Çalma sırasına ekleniyor...");  // Tuşa basınca hemen alert görünsün
+    async function addToQueue(trackUri) {
+        alert("🎵 Çalma sırasına ekleniyor..."); // Tuşa basınca hemen alert görünsün
 
         const response = await fetch('/add-to-queue/', {
             method: 'POST',
@@ -163,27 +163,27 @@
 
         const result = await response.json();
         if (result.message) {
-            alert(result.message);  // Başarı mesajı
-        } else {
-            alert(result.error);  // Hata mesajı
+            alert(result.message); // Başarı mesajını göster
+        } else if (result.error) {
+            alert(result.error); // Hata mesajını göster
         }
     }
 
-        function search(event) {
-            event.preventDefault();
-            const query = document.getElementById('search-input').value;
+    function search(event) {
+        event.preventDefault();
+        const query = document.getElementById('search-input').value;
 
-            $.ajax({
-                url: "{% url 'arama_sonuclari' %}",
-                data: { q: query },
-                success: function(response) {
-                    $('#search-results').html(response);
-                },
-                error: function() {
-                    alert('Arama sırasında bir hata oluştu!');
-                }
-            });
-        }
+        $.ajax({
+            url: "{% url 'arama_sonuclari' %}",
+            data: { q: query },
+            success: function(response) {
+                $('#search-results').html(response);
+            },
+            error: function() {
+                alert('Arama sırasında bir hata oluştu!');
+            }
+        });
+    }
     </script>
 </body>
 </html>

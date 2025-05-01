@@ -80,15 +80,14 @@ def add_to_queue(request):
 
         print("Spotify API yanıtı:", response.status_code, response.text)  # Hata ayıklama için log
 
-        if response.status_code != 204:
+        if response.status_code == 204:
+            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})  # Başarı mesajını güncelle
+        else:
             error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
             return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
 
-        return JsonResponse({"message": "Şarkı çalma sırasına eklendi!"})
-
     print("GET isteği alındı.")  # Hata ayıklama için log
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
-
 
 
 # Şarkı arama view
