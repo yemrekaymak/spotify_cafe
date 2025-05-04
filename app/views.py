@@ -39,26 +39,23 @@ def callback(request):
         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
-    
     code = request.GET.get('code')
     if not code:
         return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
-    
+
     try:
         # Yeni access token ve refresh token al
         token_info = sp_oauth.get_access_token(code)
         
-        # Eski token'ları temizle ve yeni token'ları kaydet
+        # Eski token'ları temizle
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         
+        # Ana sayfaya yönlendir
         return redirect('home')
-    
     except Exception as e:
-        # Eğer refresh token iptal edildiyse veya geçersizse, kullanıcıdan tekrar giriş yapmasını iste
-        print(f"Access token alınamadı: {str(e)}")
-        return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
+        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
@@ -157,8 +154,7 @@ def get_valid_access_token(request):
     # Eğer access token mevcut değilse veya süresi dolmuşsa
     if not access_token or token_is_expired({'expires_at': request.session.get('expires_at', 0)}):
         if not refresh_token:
-            # Refresh token yoksa kullanıcıyı tekrar giriş yapmaya yönlendir
-            return redirect('giris_yap')
+            return None  # Refresh token yoksa işlem yapılamaz
 
         # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
         sp_oauth = SpotifyOAuth(
@@ -176,7 +172,7 @@ def get_valid_access_token(request):
             request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         except Exception as e:
             print(f"Token yenileme hatası: {str(e)}")
-            return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
+            return None
 
     return access_token
 
