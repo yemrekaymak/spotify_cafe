@@ -100,31 +100,23 @@ from django.http import JsonResponse
 
 # Şarkı arama view
 def search_tracks(request):
-    # Spotify erişim token'ını al
-    access_token = request.session.get('spotify_access_token')
-    
-    # Eğer token yoksa, kullanıcıyı uyar
+    access_token = get_valid_access_token(request)
     if not access_token:
         return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
-    # Arama sorgusunu al
     query = request.GET.get('q')
     if not query:
         return JsonResponse({"error": "Arama sorgusu eksik."}, status=400)
 
-    # Spotify API'ye istek gönder
     headers = {'Authorization': f'Bearer {access_token}'}
     search_url = f'https://api.spotify.com/v1/search?q={query}&type=track&limit=10'
     response = requests.get(search_url, headers=headers)
 
-    # Eğer başarılı bir sonuç geldiyse
     if response.status_code == 200:
         data = response.json()
         tracks = data.get('tracks', {}).get('items', [])
-        # Şarkıları HTML şablonuna gönder
         return render(request, 'search_results.html', {'tracks': tracks})
     else:
-        # Eğer bir hata olduysa
         return JsonResponse({"error": "Şarkılar alınamadı."}, status=400)
 
 # Access token alma view
@@ -186,7 +178,7 @@ def token_is_expired(token_info):
 
 # Kullanıcı verilerini döndüren view
 def get_user_data(request):
-    access_token = request.session.get('spotify_access_token')
+    access_token = get_valid_access_token(request)
     if not access_token:
         return redirect('giris_yap')
 
@@ -224,11 +216,11 @@ def arama_sonuclari(request):
 
 # Tüm sanatçıları döndüren view
 def sanatci_listesi(request):
-    access_token = request.session.get('spotify_access_token')
+    access_token = get_valid_access_token(request)
     if not access_token:
-        return redirect('giris_yap')  # Kullanıcı giriş yapmamışsa yönlendir
+        return redirect('giris_yap')
 
-    query = request.GET.get('q')  # Kullanıcının arama sorgusunu al
+    query = request.GET.get('q')
     if not query:
         return render(request, 'app/sanatci_listesi.html', {'error': "Lütfen bir sanatçı adı girin."})
 
@@ -237,9 +229,9 @@ def sanatci_listesi(request):
 
     try:
         response = requests.get(search_url, headers=headers)
-        response.raise_for_status()  # Hata durumlarını kontrol et
+        response.raise_for_status()
         data = response.json()
         artists = data.get('artists', {}).get('items', [])
         return render(request, 'app/sanatci_listesi.html', {'artists': artists})
     except requests.exceptions.RequestException as e:
-        return render(request, 'app/sanatci_listesi.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
+        return render(request, 'app/sanatci_listesi.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
