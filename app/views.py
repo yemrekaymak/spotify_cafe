@@ -44,52 +44,60 @@ def callback(request):
     )
     code = request.GET.get('code')
     if not code:
-        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
+        print("Spotify'dan geri dönüş kodu alınamadı.")  # Log
+        return redirect('giris_yap')
 
     try:
         token_info = sp_oauth.get_access_token(code)
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
-        request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
-        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
+        request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+        print("Access token başarıyla alındı:", token_info)  # Log
+        return redirect('home')
     except Exception as e:
-        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
+        print(f"Access token alınamadı: {str(e)}")  # Log
+        return redirect('giris_yap')
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
-        print("POST isteği alındı.")  # Hata ayıklama için log
+        print("POST isteği alındı.")
         access_token = request.session.get('spotify_access_token')
         if not access_token:
-            print("Access token eksik.")  # Hata ayıklama için log
-            return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
+            print("Access token eksik.")
+            return redirect('giris_yap')
 
         try:
             data = json.loads(request.body)
             track_uri = data.get('track_uri')
-            print("Alınan track_uri:", track_uri)  # Hata ayıklama için log
+            print("Alınan track_uri:", track_uri)
         except json.JSONDecodeError:
-            print("Geçersiz JSON verisi.")  # Hata ayıklama için log
+            print("Geçersiz JSON verisi.")
             return JsonResponse({"error": "Geçersiz JSON verisi."}, status=400)
 
         if not track_uri:
-            print("Şarkı URI'si eksik.")  # Hata ayıklama için log
+            print("Şarkı URI'si eksik.")
             return JsonResponse({"error": "Şarkı URI'si eksik."}, status=400)
 
         headers = {'Authorization': f'Bearer {access_token}'}
         queue_url = f'https://api.spotify.com/v1/me/player/queue?uri={track_uri}'
         response = requests.post(queue_url, headers=headers)
 
-        print("Spotify API yanıtı:", response.status_code, response.text)  # Hata ayıklama için log
+        print("Spotify API yanıtı:", response.status_code, response.text)
 
         if response.status_code == 204:
-            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})  # Başarı mesajını güncelle
+            print("Şarkı başarıyla çalma sırasına eklendi.")  # Log
+            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})
         else:
-            error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
+            try:
+                error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
+            except json.JSONDecodeError:
+                error_message = f"Spotify API yanıtı çözümlenemedi: {response.text}"
+            print(f"Şarkı eklenemedi: {error_message}")  # Log
+            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=response.status_code)
 
-    print("GET isteği alındı.")  # Hata ayıklama için log
+    print("GET isteği alındı.")
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
 
 
