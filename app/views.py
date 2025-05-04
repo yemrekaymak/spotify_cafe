@@ -252,10 +252,10 @@ def sanatci_listesi(request):
     except requests.exceptions.RequestException as e:
         return render(request, 'app/sanatci_listesi.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
 
-        def set_session(request):
+def set_session(request):
     request.session['test_key'] = 'test_value'
     return HttpResponse("Oturuma değer kaydedildi.")
 
-        def get_session(request):
+def get_session(request):
     value = request.session.get('test_key')
     return HttpResponse(f"Oturumdaki değer: {value}")
