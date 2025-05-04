@@ -14,7 +14,10 @@ REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'
 
 # Ana sayfa view
 def home(request):
-    return render(request, 'app/index.html')  # Ana sayfa template'i
+    access_token = get_valid_access_token(request)
+    if not access_token:
+        return redirect('giris_yap')  # Token geçersizse kullanıcıyı girişe yönlendir
+    return render(request, 'app/index.html')
 
 # Spotify sayfası view
 def spotify(request):
@@ -146,12 +149,11 @@ def get_valid_access_token(request):
     access_token = request.session.get('spotify_access_token')
     refresh_token = request.session.get('spotify_refresh_token')
 
-    # Eğer access token mevcut değilse veya süresi dolmuşsa
+    # Eğer access token yoksa veya süresi dolmuşsa
     if not access_token or token_is_expired({'expires_at': request.session.get('expires_at', 0)}):
         if not refresh_token:
-            return None  # Refresh token yoksa işlem yapılamaz
+            return None  # Refresh token da yoksa hiçbir şey yapılamaz
 
-        # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
         sp_oauth = SpotifyOAuth(
             client_id=settings.SPOTIFY_CLIENT_ID,
             client_secret=settings.SPOTIFY_CLIENT_SECRET,
@@ -164,9 +166,12 @@ def get_valid_access_token(request):
             access_token = token_info['access_token']
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
-            request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
+            request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         except Exception as e:
-            print(f"Token yenileme hatası: {str(e)}")
+            print(f"Access token alınamadı: {str(e)}")
+
+            # Token alınamadıysa oturumu sıfırla
+            request.session.flush()
             return None
 
     return access_token
