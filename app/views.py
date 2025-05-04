@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth
 import requests
-from django.conf import settings
 import time
 import json
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
+# Spotify API Client bilgileri
 CLIENT_ID = "75b0577d87af4f3e869017902eba769d"
 CLIENT_SECRET = "8824e08491e84b17bdcf98d26c75dd9a"
 REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'
@@ -29,9 +29,7 @@ def giris_yap(request):
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
     auth_url = sp_oauth.get_authorize_url()
-    print(f"Spotify login URL: {auth_url}")  # Bu URL'yi kontrol etmek için yazdır
     return redirect(auth_url)
-
 
 # Callback işlemini yöneten view
 def callback(request):
@@ -42,118 +40,74 @@ def callback(request):
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
     
-    # Geri dönüş kodunu al
     code = request.GET.get('code')
-    print(f"Geri dönüş kodu: {code}")  # Burada code değerini kontrol et
-
     if not code:
         return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
     
     try:
         # Yeni access token al
         token_info = sp_oauth.get_access_token(code)
-        print(f"Token bilgisi: {token_info}")  # Token bilgilerini kontrol et
         
         # Token'ları oturuma kaydet
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         
-        return redirect('home')  # Ana sayfaya yönlendir
+        return redirect('home')
     
     except Exception as e:
-        print(f"Access token alınamadı: {str(e)}")  # Hata mesajını logla
-        return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
-
+        return redirect('giris_yap')
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
-        print("POST isteği alındı.")  # Hata ayıklama için log
         access_token = request.session.get('spotify_access_token')
         if not access_token:
-            print("Access token eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
         try:
             data = json.loads(request.body)
             track_uri = data.get('track_uri')
-            print("Alınan track_uri:", track_uri)  # Hata ayıklama için log
         except json.JSONDecodeError:
-            print("Geçersiz JSON verisi.")  # Hata ayıklama için log
             return JsonResponse({"error": "Geçersiz JSON verisi."}, status=400)
 
         if not track_uri:
-            print("Şarkı URI'si eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Şarkı URI'si eksik."}, status=400)
 
         headers = {'Authorization': f'Bearer {access_token}'}
         queue_url = f'https://api.spotify.com/v1/me/player/queue?uri={track_uri}'
         response = requests.post(queue_url, headers=headers)
 
-        print("Spotify API yanıtı:", response.status_code, response.text)  # Hata ayıklama için log
-
         if response.status_code == 204:
-            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})  # Başarı mesajını güncelle
+            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})
         else:
             error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
             return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
 
-    print("GET isteği alındı.")  # Hata ayıklama için log
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
-
-
-# Şarkı arama view
-import requests
-from django.shortcuts import render
-from django.http import JsonResponse
 
 # Şarkı arama view
 def search_tracks(request):
-    # Spotify erişim token'ını al
     access_token = request.session.get('spotify_access_token')
     
-    # Eğer token yoksa, kullanıcıyı uyar
     if not access_token:
         return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
-    # Arama sorgusunu al
     query = request.GET.get('q')
     if not query:
         return JsonResponse({"error": "Arama sorgusu eksik."}, status=400)
 
-    # Spotify API'ye istek gönder
     headers = {'Authorization': f'Bearer {access_token}'}
     search_url = f'https://api.spotify.com/v1/search?q={query}&type=track&limit=10'
     response = requests.get(search_url, headers=headers)
 
-    # Eğer başarılı bir sonuç geldiyse
     if response.status_code == 200:
         data = response.json()
         tracks = data.get('tracks', {}).get('items', [])
-        # Şarkıları HTML şablonuna gönder
         return render(request, 'search_results.html', {'tracks': tracks})
     else:
-        # Eğer bir hata olduysa
         return JsonResponse({"error": "Şarkılar alınamadı."}, status=400)
-
-# Access token alma view
-def get_access_token(request):
-    sp_oauth = SpotifyOAuth(
-        client_id=settings.SPOTIFY_CLIENT_ID,
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,
-        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-        scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
-    )
-    try:
-        token_info = sp_oauth.get_cached_token()
-        if not token_info or sp_oauth.is_token_expired(token_info):
-            token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-            request.session['spotify_access_token'] = token_info['access_token']
-        return token_info['access_token']
-    except Exception as e:
-        return JsonResponse({"error": f"Access token yenilenemedi: {str(e)}"}, status=400)
 
 # Token yenileme işlemi
 def get_valid_access_token(request):
@@ -162,7 +116,6 @@ def get_valid_access_token(request):
 
     if not access_token or token_is_expired({'expires_at': request.session.get('expires_at', 0)}):
         if not refresh_token:
-            print("Refresh token eksik. Kullanıcıyı tekrar giriş yapmaya yönlendiriyorum.")
             return redirect('giris_yap')
 
         sp_oauth = SpotifyOAuth(
@@ -177,20 +130,10 @@ def get_valid_access_token(request):
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
             request.session['expires_at'] = int(time.time()) + token_info['expires_in']
-            print("Access token yenilendi:", access_token)
         except Exception as e:
-            print(f"Token yenileme hatası: {str(e)}")
-            return redirect('giris_yap')  # Giriş yapmaya yönlendir
+            return redirect('giris_yap')
 
     return access_token
-
-
-import time
-
-def token_is_expired(token_info):
-    expires_at = token_info.get('expires_at', 0)
-    current_time = int(time.time())
-    return current_time >= expires_at
 
 # Kullanıcı verilerini döndüren view
 def get_user_data(request):
@@ -212,7 +155,7 @@ def get_user_data(request):
 def arama_sonuclari(request):
     access_token = get_valid_access_token(request)
     if not access_token:
-        return redirect('giris_yap')  # Kullanıcı giriş yapmamışsa yönlendir
+        return redirect('giris_yap')
 
     query = request.GET.get('q')
     if not query:
@@ -234,9 +177,9 @@ def arama_sonuclari(request):
 def sanatci_listesi(request):
     access_token = request.session.get('spotify_access_token')
     if not access_token:
-        return redirect('giris_yap')  # Kullanıcı giriş yapmamışsa yönlendir
+        return redirect('giris_yap')
 
-    query = request.GET.get('q')  # Kullanıcının arama sorgusunu al
+    query = request.GET.get('q')
     if not query:
         return render(request, 'app/sanatci_listesi.html', {'error': "Lütfen bir sanatçı adı girin."})
 
@@ -245,17 +188,15 @@ def sanatci_listesi(request):
 
     try:
         response = requests.get(search_url, headers=headers)
-        response.raise_for_status()  # Hata durumlarını kontrol et
+        response.raise_for_status()
         data = response.json()
         artists = data.get('artists', {}).get('items', [])
         return render(request, 'app/sanatci_listesi.html', {'artists': artists})
     except requests.exceptions.RequestException as e:
-        return render(request, 'app/sanatci_listesi.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
+        return render(request, 'app/sanatci_listesi.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
 
-def set_session(request):
-    request.session['test_key'] = 'test_value'
-    return HttpResponse("Oturuma değer kaydedildi.")
-
-def get_session(request):
-    value = request.session.get('test_key')
-    return HttpResponse(f"Oturumdaki değer: {value}")
+# Token süresinin dolup dolmadığını kontrol eden fonksiyon
+def token_is_expired(token_info):
+    expires_at = token_info.get('expires_at', 0)
+    current_time = int(time.time())
+    return current_time >= expires_at
