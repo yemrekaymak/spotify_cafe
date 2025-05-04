@@ -44,19 +44,17 @@ def callback(request):
     )
     code = request.GET.get('code')
     if not code:
-        print("Spotify'dan geri dönüş kodu alınamadı.")  # Log
-        return redirect('giris_yap')
+        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
 
     try:
         token_info = sp_oauth.get_access_token(code)
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
-        request.session['expires_at'] = int(time.time()) + token_info['expires_in']
-        print("Access token başarıyla alındı:", token_info)  # Log
-        return redirect('home')
+        request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
+        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
     except Exception as e:
-        print(f"Access token alınamadı: {str(e)}")  # Log
-        return redirect('giris_yap')
+        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
+
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
