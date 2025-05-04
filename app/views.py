@@ -48,16 +48,16 @@ def callback(request):
         # Yeni access token ve refresh token al
         token_info = sp_oauth.get_access_token(code)
         
-        # Eski token'ları temizle ve yeni token'ları kaydet
+        # Token'ları oturuma kaydet
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         
-        return redirect('home')
+        print("Access token başarıyla alındı:", token_info['access_token'])  # Hata ayıklama için log
+        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
     
     except Exception as e:
-        # Eğer refresh token iptal edildiyse veya geçersizse, kullanıcıdan tekrar giriş yapmasını iste
-        print(f"Access token alınamadı: {str(e)}")
+        print(f"Access token alınamadı: {str(e)}")  # Hata ayıklama için log
         return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
 
 # Şarkıyı çalma sırasına ekleme view
@@ -157,7 +157,7 @@ def get_valid_access_token(request):
     # Eğer access token mevcut değilse veya süresi dolmuşsa
     if not access_token or token_is_expired({'expires_at': request.session.get('expires_at', 0)}):
         if not refresh_token:
-            # Refresh token yoksa kullanıcıyı tekrar giriş yapmaya yönlendir
+            print("Refresh token eksik. Kullanıcıyı tekrar giriş yapmaya yönlendiriyorum.")  # Hata ayıklama için log
             return redirect('giris_yap')
 
         # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
@@ -174,9 +174,14 @@ def get_valid_access_token(request):
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
             request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+            print("Access token yenilendi:", access_token)  # Hata ayıklama için log
         except Exception as e:
-            print(f"Token yenileme hatası: {str(e)}")
+            print(f"Token yenileme hatası: {str(e)}")  # Hata ayıklama için log
             return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
+
+    print("Access token:", request.session.get('spotify_access_token'))
+    print("Refresh token:", request.session.get('spotify_refresh_token'))
+    print("Expires at:", request.session.get('expires_at'))
 
     return access_token
 
