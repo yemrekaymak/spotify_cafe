@@ -8,7 +8,9 @@ from .views import (
     get_user_data,
     sanatci_listesi,
     add_to_queue,
-    search_tracks
+    search_tracks,
+    set_session,  # Bunu ekle
+    get_session
 )
 
 urlpatterns = [
