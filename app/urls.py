@@ -9,8 +9,6 @@ from .views import (
     sanatci_listesi,
     add_to_queue,
     search_tracks,
-    set_session,  # Bunu ekle
-    get_session
 )
 
 urlpatterns = [
@@ -23,6 +21,4 @@ urlpatterns = [
     path("sanatci-listesi/", sanatci_listesi, name='sanatci_listesi'),
     path("add-to-queue/", add_to_queue, name='add_to_queue'),
     path("search/", search_tracks, name='search_tracks'),
-    path('set_session/', set_session, name='set_session'),
-    path('get_session/', get_session, name='get_session'),
 ]
