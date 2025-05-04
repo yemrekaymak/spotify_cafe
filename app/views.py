@@ -40,23 +40,32 @@ def callback(request):
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
     
+    # Geri dönüş kodunu al
     code = request.GET.get('code')
+    
     if not code:
+        print("Spotify'dan geri dönüş kodu alınamadı.")  # Hata durumunda log
         return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
     
     try:
         # Yeni access token al
         token_info = sp_oauth.get_access_token(code)
         
+        if not token_info:
+            print("Access token alınamadı.")  # Hata durumunda log
+            return JsonResponse({"error": "Access token alınamadı."}, status=400)
+        
         # Token'ları oturuma kaydet
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         
-        return redirect('home')
+        # Başarıyla token alındığında loglama yapılmasın
+        return redirect('home')  # Ana sayfaya yönlendir
     
     except Exception as e:
-        return redirect('giris_yap')
+        print(f"Access token alınamadı: {str(e)}")  # Hata mesajını logla
+        return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
