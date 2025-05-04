@@ -44,11 +44,16 @@ def callback(request):
         return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
 
     try:
+        # Yeni access token ve refresh token al
         token_info = sp_oauth.get_access_token(code)
+        
+        # Eski token'ları temizle
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
-        request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
-        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
+        request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+        
+        # Ana sayfaya yönlendir
+        return redirect('home')
     except Exception as e:
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
@@ -164,7 +169,7 @@ def get_valid_access_token(request):
             access_token = token_info['access_token']
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
-            request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
+            request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         except Exception as e:
             print(f"Token yenileme hatası: {str(e)}")
             return None
@@ -174,10 +179,9 @@ def get_valid_access_token(request):
 import time
 
 def token_is_expired(token_info):
-    # Token'ın süresinin dolup dolmadığını kontrol et
-    expires_at = token_info.get('expires_at', 0)  # Token'ın sona erme zamanı
-    current_time = int(time.time())  # Şu anki zaman (saniye cinsinden)
-    return current_time >= expires_at  # Eğer şu anki zaman sona erme zamanını geçmişse True döner
+    expires_at = token_info.get('expires_at', 0)
+    current_time = int(time.time())
+    return current_time >= expires_at
 
 # Kullanıcı verilerini döndüren view
 def get_user_data(request):
