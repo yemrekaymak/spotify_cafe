@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-i*ld^z!#jp!$df1#sa5fxx1)&+o_gkqlxcq23i4d+0+zba#u^a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['spotify-cafe.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['spotify-cafe.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://spotify-cafe.onrender.com']
 
 
 # Application definition
