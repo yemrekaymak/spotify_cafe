@@ -55,9 +55,7 @@ def callback(request):
         # Ana sayfaya yönlendir
         return redirect('home')
     except Exception as e:
-        print(f"Token alma hatası: {str(e)}")
-        # Eğer token alınamazsa kullanıcıyı sadece bir kez giriş yapmaya yönlendir
-        return redirect('giris_yap')
+        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
@@ -158,7 +156,7 @@ def get_valid_access_token(request):
         if not refresh_token:
             return None  # Refresh token yoksa işlem yapılamaz
 
-        # Refresh token ile yeni access token almak için Spotify'a istek gönder
+        # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
         sp_oauth = SpotifyOAuth(
             client_id=settings.SPOTIFY_CLIENT_ID,
             client_secret=settings.SPOTIFY_CLIENT_SECRET,
@@ -173,9 +171,7 @@ def get_valid_access_token(request):
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
             request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         except Exception as e:
-            # Eğer refresh token geçersizse veya başka bir hata oluştuysa
             print(f"Token yenileme hatası: {str(e)}")
-            # Kullanıcıyı sadece bir kez giriş yapmaya yönlendir
             return None
 
     return access_token
