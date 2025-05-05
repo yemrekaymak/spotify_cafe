@@ -280,27 +280,18 @@ def add_to_queue(request):
 
 # Şarkı arama view
 def search_tracks(request):
-    access_token = request.session.get('spotify_access_token')
-    if not access_token:
-        return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
-
-    query = request.GET.get('q')
+    query = request.GET.get('query', '')
     if not query:
-        return JsonResponse({"error": "Arama sorgusu eksik."}, status=400)
+        return JsonResponse({"error": "Lütfen bir şarkı adı girin."}, status=400)
 
-    headers = {'Authorization': f'Bearer {access_token}'}
-    search_url = f'https://api.spotify.com/v1/search?q={query}&type=track&limit=10'
-    response = requests.get(search_url, headers=headers)
-
-    if response.status_code == 200:
-        data = response.json()
-        tracks = data.get('tracks', {}).get('items', [])
-        # Şarkı URI'lerini kontrol edelim
-        for track in tracks:
-            print(track.get('uri'))  # Şarkı URI'sini konsola yazdır
-        return JsonResponse({"tracks": tracks})
+    # Spotify arama kodu buraya gelecek
+    # Spotify API'ye arama query gönderilir
+    response = sp.search(q=query, type='track', limit=5)
+    if response['tracks']['items']:
+        return JsonResponse(response['tracks']['items'], safe=False)
     else:
-        return JsonResponse({"error": "Şarkılar alınamadı."}, status=400)
+        return JsonResponse({"error": "Şarkı bulunamadı. Lütfen farklı bir terimle arama yapın."}, status=404)
+
 
 # Access token alma view
 def get_access_token(request):
