@@ -13,7 +13,9 @@ REDIRECT_URI = 'http://localhost:8000/callback/'
 SPOTIFY_API_URL = 'https://accounts.spotify.com/api/token'
 
 def home(request):
-    return render(request, 'app/index.html')  # Ana sayfa template'i
+    access_token = request.session.get('spotify_access_token')
+    return render(request, 'app/index.html', {'is_logged_in': bool(access_token)})
+
 
 def spotify(request):
     return render(request, "app/spotify.html")
@@ -91,11 +93,9 @@ def arama_yap(request, arama_terimi):
     access_token = request.session.get('spotify_access_token')
     if not access_token:
         raise Exception("Spotify'a giriş yapılmamış.")
+
     try:
-        client_credentials_manager = SpotifyClientCredentials(
-            client_id=CLIENT_ID, client_secret=CLIENT_SECRET
-        )
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        sp = spotipy.Spotify(auth=access_token)
         sonuclar = sp.search(q=arama_terimi, type='track,artist')
         return sonuclar
     except Exception as e:
@@ -139,10 +139,7 @@ def sanatci_listesi(request):
         return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
     try:
-        client_credentials_manager = SpotifyClientCredentials(
-            client_id=CLIENT_ID, client_secret=CLIENT_SECRET
-        )
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        sp = spotipy.Spotify(auth=access_token)
         results = sp.search(q='*', type='artist', limit=request.GET.get('limit', 9))  # Dinamik limit
 
         artists = []
@@ -157,6 +154,7 @@ def sanatci_listesi(request):
     except Exception as e:
         print(f"⚠ Spotify API Hatası: {e}")
         return JsonResponse({"error": "Sanatçı listesi alınamadı."}, status=500)
+
 
 # Şarkı ekleme view
 def add_track_to_playlist(request):
