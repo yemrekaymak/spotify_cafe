@@ -38,11 +38,22 @@ def callback(request):
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
     code = request.GET.get('code')
-    token_info = sp_oauth.get_access_token(code)
+    if not code:
+        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
 
-    # Access token'ı oturuma kaydet
-    request.session['spotify_access_token'] = token_info['access_token']
-    return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
+    try:
+        token_info = sp_oauth.get_access_token(code)
+        request.session['spotify_access_token'] = token_info['access_token']
+        request.session['spotify_refresh_token'] = token_info.get('refresh_token')
+        request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+        return redirect('home')
+    except spotipy.oauth2.SpotifyOauthError as e:
+        print(f"Refresh token hatası: {str(e)}")
+        request.session.flush()  # Oturumu sıfırla
+        return redirect('giris_yap')  # Kullanıcıyı tekrar girişe yönlendir
+    except Exception as e:
+        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
+
 
 # Token yenileme fonksiyonu
 def refresh_access_token(refresh_token):
