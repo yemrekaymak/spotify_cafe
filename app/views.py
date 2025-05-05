@@ -8,6 +8,8 @@ import urllib.parse
 from django.conf import settings
 from spotipy.oauth2 import SpotifyOAuth
 import time
+from django.views.decorators.csrf import csrf_exempt
+
 
 CLIENT_ID = "a4d5b58097904826a731c8561d84a60c"
 CLIENT_SECRET = "8cf45756c2494cf9a692cc41666b22c0"
@@ -308,7 +310,7 @@ def add_to_queue(request):
 
     print("GET isteği alındı.")  # Hata ayıklama için log
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
-    
+
 # Şarkı arama view
 def search_tracks(request):
     query = request.GET.get('q')
