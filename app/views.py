@@ -140,31 +140,35 @@ def get_access_token(request):
 def get_valid_access_token(request):
     access_token = request.session.get('spotify_access_token')
     refresh_token = request.session.get('spotify_refresh_token')
+    expires_at = request.session.get('expires_at', 0)
 
-    # Eğer access token mevcut değilse veya süresi dolmuşsa
-    if not access_token or token_is_expired({'expires_at': request.session.get('expires_at', 0)}):
+    # Token yoksa veya süresi dolmuşsa
+    if not access_token or token_is_expired({'expires_at': expires_at}):
         if not refresh_token:
-            return None  # Refresh token yoksa işlem yapılamaz
+            print("Refresh token eksik, tekrar giriş gerekli.")
+            request.session.flush()
+            return redirect('giris_yap')
 
-        # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
         sp_oauth = SpotifyOAuth(
             client_id=settings.SPOTIFY_CLIENT_ID,
             client_secret=settings.SPOTIFY_CLIENT_SECRET,
-            redirect_uri=settings.SPOTIFY_REDIRECT_URI
+            redirect_uri=settings.SPOTIFY_REDIRECT_URI,
+            scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
         )
 
         try:
-            # Refresh token ile yeni access token al
             token_info = sp_oauth.refresh_access_token(refresh_token)
             access_token = token_info['access_token']
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
-            request.session['expires_at'] = int(time.time()) + token_info['expires_in']  # Token'ın sona erme zamanını kaydet
+            request.session['expires_at'] = int(time.time()) + token_info['expires_in']
         except Exception as e:
-            print(f"Token yenileme hatası: {str(e)}")
-            return None
+            print(f"Access token alınamadı: {str(e)}")
+            request.session.flush()
+            return redirect('giris_yap')
 
     return access_token
+
 
 import time
 
