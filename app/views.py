@@ -62,7 +62,7 @@ def callback(request):
 
     code = request.GET.get('code')
     if not code:
-        return JsonResponse({"error": "Spotify'dan kod alınamadı. Giriş başarısız."}, status=400)
+        return redirect('home')  # Hatalıysa anasayfaya at
 
     try:
         token_info = sp_oauth.get_access_token(code, as_dict=True)
@@ -71,12 +71,20 @@ def callback(request):
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
 
-        # Artık token alındı, kullanıcıyı ana sayfaya yönlendirebiliriz
-        return redirect('spotify_home')
+        user_data = {
+            "access_token": token_info['access_token'],
+            "refresh_token": token_info.get('refresh_token'),
+            "expires_in": token_info['expires_in']
+        }
+
+        return render(request, 'spotify/callback.html', {
+            "user_data_json": json.dumps(user_data)
+        })
 
     except Exception as e:
         print("Access token alınamadı:", str(e))
-        return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
+        return redirect('home')  # Hatalıysa yine anasayfaya at
+
 
 
 

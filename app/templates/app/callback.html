@@ -10,15 +10,10 @@
 
     <script>
         try {
-            const userDataJson = '{{ user_data_json|escapejs }}';
-
-            if (!userDataJson || userDataJson.trim() === '') {
-                throw new Error("Kullanıcı verisi alınamadı!");
-            }
-
+            const userDataJson = '{{ user_data_json|default:"{}"|escapejs }}';
             const userData = JSON.parse(userDataJson);
 
-            if (userData.access_token) {
+            if (userData && userData.access_token) {
                 localStorage.setItem('spotify_user_data', JSON.stringify(userData));
                 console.log("Access token kaydedildi:", userData.access_token);
                 window.location.href = "{% url 'spotify_home' %}";
@@ -27,8 +22,8 @@
             }
         } catch (error) {
             console.error("Giriş sırasında hata oluştu:", error);
-            document.getElementById("user-data").textContent = "Hata: " + error.message;
-            alert("Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            document.getElementById("user-data").textContent = "Giriş sırasında bir hata oluştu.";
+            // window.location.href = "{% url 'home' %}"; // İstersen buraya da atabilirim
         }
     </script>
 </body>
