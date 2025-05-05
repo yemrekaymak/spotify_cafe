@@ -127,4 +127,3 @@ async function getTopSongs(){
     });
 }
 
-getTopSongs();
