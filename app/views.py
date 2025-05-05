@@ -38,22 +38,18 @@ def callback(request):
     code = request.GET.get('code')
     if not code:
         print("Spotify'dan geri dönüş kodu alınamadı.")  # Log
-        return redirect('giris_yap')  # Hata durumunda tekrar giriş sayfasına yönlendir
+        return redirect('giris_yap')
 
     try:
         token_info = sp_oauth.get_access_token(code)
-        if token_info and 'access_token' in token_info:
-            request.session['spotify_access_token'] = token_info['access_token']
-            request.session['spotify_refresh_token'] = token_info.get('refresh_token')
-            request.session['expires_at'] = int(time.time()) + token_info['expires_in']
-            print("Access token başarıyla alındı:", token_info)  # Log
-            return redirect('home')
-        else:
-            print("Access token alınamadı veya beklenen anahtarlar yok.") # Log
-            return redirect('giris_yap')
+        request.session['spotify_access_token'] = token_info['access_token']
+        request.session['spotify_refresh_token'] = token_info.get('refresh_token')
+        request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+        print("Access token başarıyla alındı:", token_info)  # Log
+        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
     except Exception as e:
         print(f"Access token alınamadı: {str(e)}")  # Log
-        return redirect('giris_yap') # Hata durumunda tekrar giriş sayfasına yönlendir
+        return redirect('giris_yap')
 
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
@@ -157,27 +153,27 @@ def get_valid_access_token(request):
     # Token yoksa veya süresi dolmuşsa
     if not access_token or token_is_expired({'expires_at': expires_at}):
         if not refresh_token:
-            print("Refresh token eksik, tekrar giriş gerekli.")
-            request.session.flush()
+            print("Refresh token eksik. Kullanıcıyı tekrar giriş yapmaya yönlendiriyorum.")  # Log
             return redirect('giris_yap')
 
+        # Refresh token kullanarak yeni access token almak için Spotify'a istek gönder
         sp_oauth = SpotifyOAuth(
             client_id=settings.SPOTIFY_CLIENT_ID,
             client_secret=settings.SPOTIFY_CLIENT_SECRET,
-            redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-            scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+            redirect_uri=settings.SPOTIFY_REDIRECT_URI
         )
 
         try:
+            # Refresh token ile yeni access token al
             token_info = sp_oauth.refresh_access_token(refresh_token)
             access_token = token_info['access_token']
             request.session['spotify_access_token'] = access_token
             request.session['spotify_refresh_token'] = token_info.get('refresh_token', refresh_token)
             request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+            print("Access token yenilendi:", access_token)  # Log
         except Exception as e:
-            print(f"Access token alınamadı: {str(e)}")
-            request.session.flush()
-            return redirect('giris_yap')
+            print(f"Token yenileme hatası: {str(e)}")  # Log
+            return redirect('giris_yap')  # Kullanıcıyı tekrar giriş yapmaya yönlendir
 
     return access_token
 
@@ -185,10 +181,9 @@ def get_valid_access_token(request):
 import time
 
 def token_is_expired(token_info):
-    # Token'ın süresinin dolup dolmadığını kontrol et
-    expires_at = token_info.get('expires_at', 0)  # Token'ın sona erme zamanı
-    current_time = int(time.time())  # Şu anki zaman (saniye cinsinden)
-    return current_time >= expires_at  # Eğer şu anki zaman sona erme zamanını geçmişse True döner
+    expires_at = token_info.get('expires_at', 0)
+    current_time = int(time.time())
+    return current_time >= expires_at
 
 # Kullanıcı verilerini döndüren view
 def get_user_data(request):
