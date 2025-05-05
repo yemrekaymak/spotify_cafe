@@ -188,92 +188,6 @@ def sanatci_listesi(request):
         print(f"⚠ Spotify API Hatası: {e}")
         return JsonResponse({"error": "Sanatçı listesi alınamadı."}, status=500)
 
-
-# Şarkı ekleme view
-def add_track_to_playlist(request):
-    if request.method == 'POST':
-        playlist_id = request.POST.get('playlist_id')
-        track_uri = request.POST.get('track_uri')
-
-        if not playlist_id or not track_uri:
-            return JsonResponse({"error": "Çalma listesi ID'si veya şarkı URI'si eksik."}, status=400)
-
-        access_token = request.session.get('spotify_access_token')
-        if not access_token:
-            return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
-
-        # Şarkı ekleme isteği
-        add_track_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
-        headers = {'Authorization': f'Bearer {access_token}'}
-        payload = {
-            'uris': [track_uri]
-        }
-        response = requests.post(add_track_url, headers=headers, json=payload)
-
-        if response.status_code == 201:  # Başarılı
-            return JsonResponse({"message": "Şarkı başarıyla eklendi!"})
-        else:
-            error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
-
-# Şarkı arama ve ekleme view
-def search_and_add_track(request):
-    if request.method == 'POST':
-        playlist_id = request.POST.get('playlist_id')
-        track_name = request.POST.get('track_name')
-
-        if not playlist_id or not track_name:
-            return JsonResponse({"error": "Çalma listesi ID'si veya şarkı adı eksik."}, status=400)
-
-        access_token = request.session.get('spotify_access_token')
-        if not access_token:
-            return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
-
-        search_url = 'https://api.spotify.com/v1/search'
-        headers = {'Authorization': f'Bearer {access_token}'}
-        params = {'q': track_name, 'type': 'track', 'limit': 1}
-        search_response = requests.get(search_url, headers=headers, params=params)
-
-        if search_response.status_code != 200:
-            return JsonResponse({"error": "Şarkı arama başarısız."}, status=400)
-
-        try:
-            search_results = search_response.json()
-            tracks = search_results.get('tracks', {}).get('items', [])
-            if not tracks:
-                return JsonResponse({"error": "Şarkı bulunamadı."}, status=404)
-
-            track_uri = tracks[0].get('uri')
-            add_track_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
-            payload = {'uris': [track_uri]}
-            add_response = requests.post(add_track_url, headers=headers, json=payload)
-
-            if add_response.status_code == 201:
-                return JsonResponse({"message": "Şarkı başarıyla eklendi!"})
-            else:
-                error_message = add_response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-                return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
-        except ValueError:
-            return JsonResponse({"error": "Spotify API yanıtı çözümlenemedi."}, status=400)
-
-# Kullanıcının çalma listelerini döndüren view
-def get_user_playlists(request):
-    access_token = request.session.get('spotify_access_token')
-    if not access_token:
-        return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
-
-    # Kullanıcının çalma listelerini alma isteği
-    playlists_url = 'https://api.spotify.com/v1/me/playlists'
-    headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get(playlists_url, headers=headers)
-
-    if response.status_code == 200:  # Başarılı
-        playlists = response.json().get('items', [])
-        return JsonResponse({"playlists": playlists})
-    else:
-        error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-        return JsonResponse({"error": f"Çalma listeleri alınamadı: {error_message}"}, status=400)
-
 # Şarkıyı çalma sırasına ekleme view
 @csrf_exempt
 def add_to_queue(request):
@@ -311,37 +225,6 @@ def add_to_queue(request):
     print("GET isteği alındı.")  # Hata ayıklama için log
     return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
 
-# Şarkı arama view
-def search_tracks(request):
-    query = request.GET.get('q')
-    access_token = request.session.get('access_token')  # veya localStorage yerine session tercih edilir
-
-    if not query:
-        return render(request, 'search_results.html', {'error': 'Lütfen bir arama terimi girin.'})
-
-    if not access_token:
-        return render(request, 'search_results.html', {'error': 'Spotify erişim token bulunamadı. Lütfen giriş yapın.'})
-
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
-    params = {
-        'q': query,
-        'type': 'track',
-        'limit': 10
-    }
-
-    response = requests.get('https://api.spotify.com/v1/search', headers=headers, params=params)
-
-    if response.status_code == 200:
-        data = response.json()
-        tracks = data.get('tracks', {}).get('items', [])
-        return render(request, 'search_results.html', {'tracks': tracks})
-    else:
-        return render(request, 'search_results.html', {
-            'error': 'Spotify API hatası: ' + response.json().get('error', {}).get('message', 'Bilinmeyen hata')
-        })
 
 # Access token alma view
 def get_access_token(request):
