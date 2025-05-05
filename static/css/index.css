@@ -60,6 +60,13 @@ a:hover {
     margin-top: 30px;
 }
 
+/* Görsel boyutunu artır */
+.image-container img {
+    width: 100%;
+    max-width: 900px; /* Maksimum genişliği artırdık */
+    height: auto;
+}
+
 /* Responsif Tasarım */
 @media (max-width: 768px) {
     body {
