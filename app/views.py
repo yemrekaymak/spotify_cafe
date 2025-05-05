@@ -291,30 +291,35 @@ def add_to_queue(request):
 
 # Şarkı arama view
 def search_tracks(request):
-    query = request.GET.get('query', '')
-    if not query:
-        return JsonResponse({"error": "Lütfen bir şarkı adı girin."}, status=400)
+    query = request.GET.get('q')
+    access_token = request.session.get('access_token')  # veya localStorage yerine session tercih edilir
 
-    try:
-        # Spotify API'ye arama query gönderilir
-        response = sp.search(q=query, type='track', limit=5)
-        
-        # Eğer sonuç varsa, JSON formatında döndürülür
-        if response['tracks']['items']:
-            tracks = [
-                {
-                    "name": track["name"],
-                    "artist": track["artists"][0]["name"],
-                    "album": track["album"]["name"],
-                    "uri": track["uri"]
-                }
-                for track in response['tracks']['items']
-            ]
-            return JsonResponse({"tracks": tracks}, safe=False)
-        else:
-            return JsonResponse({"error": "Şarkı bulunamadı. Lütfen farklı bir terimle arama yapın."}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": f"Bir hata oluştu: {str(e)}"}, status=500)
+    if not query:
+        return render(request, 'search_results.html', {'error': 'Lütfen bir arama terimi girin.'})
+
+    if not access_token:
+        return render(request, 'search_results.html', {'error': 'Spotify erişim token bulunamadı. Lütfen giriş yapın.'})
+
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    params = {
+        'q': query,
+        'type': 'track',
+        'limit': 10
+    }
+
+    response = requests.get('https://api.spotify.com/v1/search', headers=headers, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        tracks = data.get('tracks', {}).get('items', [])
+        return render(request, 'search_results.html', {'tracks': tracks})
+    else:
+        return render(request, 'search_results.html', {
+            'error': 'Spotify API hatası: ' + response.json().get('error', {}).get('message', 'Bilinmeyen hata')
+        })
 
 # Access token alma view
 def get_access_token(request):
