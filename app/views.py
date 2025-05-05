@@ -33,26 +33,41 @@ def giris_yap(request):
 
 # Callback işlemini yöneten view
 def callback(request):
+    from spotipy.oauth2 import SpotifyOAuth
+    import time
+
     sp_oauth = SpotifyOAuth(
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
-        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-        scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+        redirect_uri='https://spotify-cafe.onrender.com/callback/',  # BU URI, Spotify dashboard'daki URI ile birebir aynı olmalı!
+        scope="user-read-private user-read-email user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
+
     code = request.GET.get('code')
     if not code:
-        print("Spotify'dan geri dönüş kodu alınamadı.")  # Log
-        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı. Lütfen tekrar giriş yapın."}, status=400)
+        return JsonResponse({"error": "Spotify'dan kod alınamadı. Giriş başarısız."}, status=400)
 
     try:
-        token_info = sp_oauth.get_access_token(code)
+        token_info = sp_oauth.get_access_token(code, as_dict=True)
+
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
-        print("Access token başarıyla alındı:", token_info)  # Log
-        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
+
+        # Kullanıcı bilgilerini frontend'e göndermek için JSON'a çeviriyoruz
+        user_data = {
+            "access_token": token_info['access_token'],
+            "refresh_token": token_info.get('refresh_token'),
+            "expires_in": token_info['expires_in']
+        }
+
+        # JSON verisini template'e gönderiyoruz
+        return render(request, 'spotify/callback.html', {
+            "user_data_json": json.dumps(user_data)
+        })
+
     except Exception as e:
-        print(f"Access token alınamadı: {str(e)}")  # Log
+        print("Access token alınamadı:", str(e))
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Token yenileme fonksiyonu
