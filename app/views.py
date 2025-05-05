@@ -6,6 +6,8 @@ import json
 import requests
 import urllib.parse
 from django.conf import settings
+from spotipy.oauth2 import SpotifyOAuth
+import time
 
 CLIENT_ID = "a4d5b58097904826a731c8561d84a60c"
 CLIENT_SECRET = "8cf45756c2494cf9a692cc41666b22c0"
@@ -44,8 +46,6 @@ def giris_yap(request):
 
 # Callback işlemini yöneten view
 def callback(request):
-    from spotipy.oauth2 import SpotifyOAuth
-    import time
 
     sp_oauth = SpotifyOAuth(
         client_id=settings.SPOTIFY_CLIENT_ID,
