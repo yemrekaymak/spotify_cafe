@@ -99,18 +99,25 @@ def refresh_access_token(refresh_token):
 
 # Arama sonuçlarını döndüren view
 def arama_sonuclari(request):
-    arama_terimi = request.GET.get('q')
-    if not arama_terimi:
-        return HttpResponse("⚠ Lütfen bir arama terimi girin.")
+    access_token = get_valid_access_token(request)
+    if not access_token:
+        return redirect('giris_yap')  # Kullanıcı giriş yapmamışsa yönlendir
+
+    query = request.GET.get('q')
+    if not query:
+        return render(request, 'app/arama_sonuclari.html', {'error': "Lütfen bir arama terimi girin."})
+
+    headers = {'Authorization': f'Bearer {access_token}'}
+    search_url = f'https://api.spotify.com/v1/search?q={query}&type=track&limit=10'
 
     try:
-        sonuclar = arama_yap(request, arama_terimi)
-        if not sonuclar['tracks']['items'] and not sonuclar['artists']['items']:
-            return HttpResponse("⚠ Arama sonuçları bulunamadı.")
-        return render(request, 'app/arama_sonuclari.html', {'sonuclar': sonuclar})
-    except Exception as e:
-        print(f"⚠ Arama sırasında hata oluştu: {e}")
-        return HttpResponse("⚠ Spotify ile bağlantı kurulamadı. Lütfen tekrar deneyin.")
+        response = requests.get(search_url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        tracks = data.get('tracks', {}).get('items', [])
+        return render(request, 'app/arama_sonuclari.html', {'tracks': tracks})
+    except requests.exceptions.RequestException as e:
+        return render(request, 'app/arama_sonuclari.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
 
 # Spotify API ile arama yapan fonksiyon
 def arama_yap(request, arama_terimi):
