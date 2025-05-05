@@ -9,7 +9,7 @@ from django.conf import settings
 
 CLIENT_ID = "a4d5b58097904826a731c8561d84a60c"
 CLIENT_SECRET = "8cf45756c2494cf9a692cc41666b22c0"
-REDIRECT_URI = 'https://accounts.spotify.com/api/token'
+REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'  # bu önemli!
 SPOTIFY_API_URL = 'https://accounts.spotify.com/api/token'
 
 def home(request):
