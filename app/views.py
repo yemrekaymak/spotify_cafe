@@ -23,9 +23,9 @@ def spotify(request):
 # Kullanıcıyı Spotify'a yönlendiren view
 def giris_yap(request):
     sp_oauth = SpotifyOAuth(
-        client_id=settings.SPOTIFY_CLIENT_ID,  # settings.py'den alıyoruz
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,  # settings.py'den alıyoruz
-        redirect_uri=settings.SPOTIFY_REDIRECT_URI,  # settings.py'den alıyoruz
+        client_id=settings.SPOTIFY_CLIENT_ID,
+        client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
         scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
     )
     auth_url = sp_oauth.get_authorize_url()
@@ -33,7 +33,7 @@ def giris_yap(request):
 
 # Callback işlemini yöneten view
 def callback(request):
-    sp_oauth = SpotifyOAuth(
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
@@ -41,7 +41,12 @@ def callback(request):
     )
     code = request.GET.get('code')
     if not code:
-        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
+        # Kodu alamadıysak ve zaten giriş yapmamışsak tekrar yönlendir.
+        # Ancak, sonsuz döngüyü engellemek için bir mekanizma ekleyelim.
+        if not request.session.get('spotify_access_token'):
+            return redirect('giris_yap')
+        else:
+            return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
 
     try:
         token_info = sp_oauth.get_access_token(code)
@@ -55,7 +60,6 @@ def callback(request):
         return redirect('giris_yap')  # Kullanıcıyı tekrar girişe yönlendir
     except Exception as e:
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
-
 
 # Token yenileme fonksiyonu
 def refresh_access_token(refresh_token):
