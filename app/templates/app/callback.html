@@ -1,23 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Giriş Başarılı</title>
-</head>
-<body>
-    <h1>Giriş Başarılı!</h1>
-    <p>Kullanıcı Bilgileri:</p>
-    <pre id="user-data"></pre>
-    <script>
-        try {
-            const userDataJson = '{{ user_data_json|safe }}';
-            const userData = JSON.parse(userDataJson);
+<script>
+    try {
+        const userDataJson = '{{ user_data_json|safe }}';
+        if (!userDataJson || userDataJson.trim() === '') {
+            throw new Error("Kullanıcı verisi alınamadı!");
+        }
+
+        const userData = JSON.parse(userDataJson);
+        
+        if (userData.access_token) {
             localStorage.setItem('spotify_user_data', JSON.stringify(userData));
             console.log("Access token kaydedildi:", userData.access_token);
             window.location.href = "{% url 'spotify_home' %}";
-        } catch (error) {
-            console.error("Access token kaydedilirken hata oluştu:", error);
-            alert("Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+        } else {
+            throw new Error("Access token bulunamadı!");
         }
-    </script>
-</body>
-</html>
+    } catch (error) {
+        console.error("Giriş sırasında hata oluştu:", error);
+        document.getElementById("user-data").textContent = "Bir hata oluştu: " + error.message;
+        alert("Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+</script>
