@@ -135,8 +135,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static/'),
 ]
 # settings.py
-SPOTIFY_CLIENT_ID = '75b0577d87af4f3e869017902eba769d'
-SPOTIFY_CLIENT_SECRET = '8824e08491e84b17bdcf98d26c75dd9a'
+SPOTIFY_CLIENT_ID = '98872c7e52444cdba5ebef97b89198c5'
+SPOTIFY_CLIENT_SECRET = '0f6afd0d8552472e995967fca812eeb7'
 SPOTIFY_REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

@@ -7,9 +7,9 @@ import requests
 import urllib.parse
 from django.conf import settings
 
-CLIENT_ID = "75b0577d87af4f3e869017902eba769d"
-CLIENT_SECRET = "8824e08491e84b17bdcf98d26c75dd9a"
-REDIRECT_URI = 'http://localhost:8000/callback/'
+CLIENT_ID = "98872c7e52444cdba5ebef97b89198c5"
+CLIENT_SECRET = "0f6afd0d8552472e995967fca812eeb7"
+REDIRECT_URI = 'https://accounts.spotify.com/api/token'
 SPOTIFY_API_URL = 'https://accounts.spotify.com/api/token'
 
 def home(request):
