@@ -1,18 +1,25 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Ana Sayfa</title>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
 <body>
-    <ul>
-        <li><a href="{% url 'spotify_home' %}">yönlendirme</a></li>
-    </ul>
+    <nav>
+        <ul>
+            <li><a href="{% url 'spotify_home' %}">Spotify'a Git</a></li>
+        </ul>
+    </nav>
 
-    <h1>Yönlendirme butonuna basınız.....</h1>
+    <main>
+        <section class="image-container">
+            <img src="https://drive.google.com/uc?export=view&id=1C2DFGklEdaJ8umioMNZnhS18J6_WlJkF" 
+                 alt="Spotify Cafe Kapak Görseli" 
+                 style="width: 100%; max-width: 600px; display: block; margin: 20px auto; border-radius: 10px;">
+        </section>
+    </main>
 </body>
 </html>
