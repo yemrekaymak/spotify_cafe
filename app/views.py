@@ -273,29 +273,42 @@ def get_user_playlists(request):
         return JsonResponse({"error": f"Çalma listeleri alınamadı: {error_message}"}, status=400)
 
 # Şarkıyı çalma sırasına ekleme view
+@csrf_exempt
 def add_to_queue(request):
     if request.method == 'POST':
+        print("POST isteği alındı.")  # Hata ayıklama için log
         access_token = request.session.get('spotify_access_token')
         if not access_token:
+            print("Access token eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
-        track_uri = request.POST.get('track_uri')
+        try:
+            data = json.loads(request.body)
+            track_uri = data.get('track_uri')
+            print("Alınan track_uri:", track_uri)  # Hata ayıklama için log
+        except json.JSONDecodeError:
+            print("Geçersiz JSON verisi.")  # Hata ayıklama için log
+            return JsonResponse({"error": "Geçersiz JSON verisi."}, status=400)
+
         if not track_uri:
+            print("Şarkı URI'si eksik.")  # Hata ayıklama için log
             return JsonResponse({"error": "Şarkı URI'si eksik."}, status=400)
 
         headers = {'Authorization': f'Bearer {access_token}'}
         queue_url = f'https://api.spotify.com/v1/me/player/queue?uri={track_uri}'
         response = requests.post(queue_url, headers=headers)
 
-        if response.status_code == 204:  # Başarılı
-            return JsonResponse({"message": "Şarkı çalma sırasına eklendi!"})
-        else:
-            try:
-                error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-            except ValueError:
-                error_message = f"Spotify API yanıtı çözümlenemedi: {response.text}"
-            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=response.status_code)
+        print("Spotify API yanıtı:", response.status_code, response.text)  # Hata ayıklama için log
 
+        if response.status_code == 204:
+            return JsonResponse({"message": "Şarkı çalma sırasına başarıyla eklendi!"})  # Başarı mesajını güncelle
+        else:
+            error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
+            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
+
+    print("GET isteği alındı.")  # Hata ayıklama için log
+    return JsonResponse({"error": "Sadece POST istekleri destekleniyor."}, status=405)
+    
 # Şarkı arama view
 def search_tracks(request):
     query = request.GET.get('q')
