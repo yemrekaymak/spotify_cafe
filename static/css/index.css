@@ -67,9 +67,12 @@ a:hover {
     height: auto;
 }
 
-.redirect-button{
+li{
     list-style-type: none;
-    text-decoration: none;
+    margin: 0;
+}
+
+.redirect-button{
     background-color: #1db954;
     border: none;
     border-radius: 20px;
