@@ -63,7 +63,7 @@ a:hover {
 /* Görsel boyutunu artır */
 .image-container img {
     width: 100%;
-    max-width: 900px; /* Maksimum genişliği artırdık */
+    max-width: 2000px; /* Maksimum genişliği artırdık */
     height: auto;
 }
 
