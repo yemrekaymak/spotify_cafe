@@ -83,3 +83,10 @@ document.getElementById('search-add-track-form').addEventListener('submit', asyn
         alert(result.error);
     }
 });
+fetch('/add_to_queue/', {
+    method: 'POST',
+    body: JSON.stringify({ track_uri: trackURI }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
