@@ -18,5 +18,5 @@ urlpatterns = [
     path("callback/", callback, name='callback'),
     path("user/", get_user_data, name='get_user_data'),
     path("sanatci_listesi/", sanatci_listesi, name='sanatci_listesi'),
-    path("add_to_queue/", add_to_queue, name='add_to_queue'),
+    path("add-to-queue/", add_to_queue, name='add_to_queue'),
 ]
