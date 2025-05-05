@@ -1,5 +1,5 @@
 // Backend'den sanatçıları al ve göster
-fetch('/sanatci-listesi/')
+fetch('/sanatci_listesi/')
     .then(response => response.json())
     .then(data => {
         if (data.artists && data.artists.length > 0) {
@@ -23,7 +23,7 @@ function showArtists(artists) {
         artistCard.className = 'artist-card';
         artistCard.innerHTML = `
             <h4>${artist.name}</h4>
-            <img src="${artist.image}" alt="${artist.name}" style="width: 100%; border-radius: 10px;">
+            <img src="${artist.image || 'default.png'}" alt="${artist.name}" style="width: 100%; border-radius: 10px;">
             <button onclick="selectArtist('${artist.id}')">Seç</button>
         `;
         artistGrid.appendChild(artistCard);
@@ -83,10 +83,23 @@ document.getElementById('search-add-track-form').addEventListener('submit', asyn
         alert(result.error);
     }
 });
-fetch('/add_to_queue/', {
-    method: 'POST',
-    body: JSON.stringify({ track_uri: trackURI }),
-    headers: {
-      'Content-Type': 'application/json'
+
+async function addToQueue(trackUri) {
+    alert("🎵 Çalma sırasına ekleniyor...");
+
+    const response = await fetch('/add-to-queue/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ track_uri: trackUri })
+    });
+
+    const result = await response.json();
+    if (result.message) {
+        alert(result.message);
+    } else {
+        alert(result.error);
     }
-  });
+}

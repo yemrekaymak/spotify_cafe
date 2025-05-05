@@ -22,31 +22,9 @@
     {% endif %}
 
     <script>
-        function playSong(uri) {
-            const userData = JSON.parse(localStorage.getItem('spotify_user_data'));
-            if (userData) {
-                fetch('https://api.spotify.com/v1/me/player/play', {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'Bearer ' + userData.access_token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ uris: [uri] })
-                }).then(response => {
-                    if (response.ok) {
-                        alert("🎵 Şarkı oynatılıyor!");
-                    } else {
-                        alert("Spotify çalar aktif değil. Lütfen Spotify'ı açın.");
-                    }
-                });
-            } else {
-                alert("Lütfen önce Spotify ile giriş yapın.");
-            }
-        }
-    </script>
-
-    <script>
         async function addToQueue(trackUri) {
+            alert("🎵 Çalma sırasına ekleniyor...");
+
             const response = await fetch('/add-to-queue/', {
                 method: 'POST',
                 headers: {
@@ -59,11 +37,10 @@
             const result = await response.json();
             if (result.message) {
                 alert(result.message);
-            } else {
+            } else if (result.error) {
                 alert(result.error);
             }
         }
     </script>
 </body>
 </html>
-
