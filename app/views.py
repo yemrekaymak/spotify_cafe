@@ -102,8 +102,8 @@ def refresh_access_token(refresh_token):
 # Arama sonuçlarını döndüren view
 def arama_sonuclari(request):
     access_token = get_valid_access_token(request)
-    if not access_token:
-        return redirect('giris_yap')  # Kullanıcı giriş yapmamışsa yönlendir
+    if isinstance(access_token, HttpResponse):
+        return access_token  # Eğer redirect dönüyorsa yönlendir
 
     query = request.GET.get('q')
     if not query:
@@ -120,20 +120,6 @@ def arama_sonuclari(request):
         return render(request, 'app/arama_sonuclari.html', {'tracks': tracks})
     except requests.exceptions.RequestException as e:
         return render(request, 'app/arama_sonuclari.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
-
-# Spotify API ile arama yapan fonksiyon
-def arama_yap(request, arama_terimi):
-    access_token = request.session.get('spotify_access_token')
-    if not access_token:
-        raise Exception("Spotify'a giriş yapılmamış.")
-
-    try:
-        sp = spotipy.Spotify(auth=access_token)
-        sonuclar = sp.search(q=arama_terimi, type='track,artist')
-        return sonuclar
-    except Exception as e:
-        print(f"⚠ Spotify API Hatası: {e}")
-        raise e
 
 # Kullanıcı verilerini döndüren view
 def get_user_data(request):
