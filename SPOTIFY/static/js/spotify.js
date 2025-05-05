@@ -95,11 +95,36 @@ async function addToQueue(trackUri) {
         },
         body: JSON.stringify({ track_uri: trackUri })
     });
-
-    const result = await response.json();
-    if (result.message) {
-        alert(result.message);
-    } else {
-        alert(result.error);
-    }
 }
+
+
+async function getTopSongs(){
+    fetch('/get_top_tracks/')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Spotify verisi alınamadı.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.tracks && data.tracks.length > 0) {
+            console.log(data.tracks);
+            // data.tracks.forEach(track => {
+            //     const div = document.createElement('div');
+            //     div.innerHTML = `
+            //         <img src="${track.image}" alt="${track.name}" style="width:100px; height:100px;">
+            //         <p><strong>${track.name}</strong> - ${track.artist}</p>
+            //         <hr>
+            //     `;
+            //     container.appendChild(div);
+            // });
+        } else {
+            
+        }
+    })
+    .catch(error => {
+        
+    });
+}
+
+getTopSongs();

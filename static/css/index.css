@@ -67,6 +67,10 @@ a:hover {
     height: auto;
 }
 
+ul{
+    padding: 0;
+}
+
 li{
     list-style-type: none;
     margin: 0;
