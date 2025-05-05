@@ -33,7 +33,7 @@ def giris_yap(request):
 
 # Callback işlemini yöneten view
 def callback(request):
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(
+    sp_oauth = SpotifyOAuth(
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
@@ -41,24 +41,18 @@ def callback(request):
     )
     code = request.GET.get('code')
     if not code:
-        # Kodu alamadıysak ve zaten giriş yapmamışsak tekrar yönlendir.
-        # Ancak, sonsuz döngüyü engellemek için bir mekanizma ekleyelim.
-        if not request.session.get('spotify_access_token'):
-            return redirect('giris_yap')
-        else:
-            return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı."}, status=400)
+        print("Spotify'dan geri dönüş kodu alınamadı.")  # Log
+        return JsonResponse({"error": "Spotify'dan geri dönüş kodu alınamadı. Lütfen tekrar giriş yapın."}, status=400)
 
     try:
         token_info = sp_oauth.get_access_token(code)
         request.session['spotify_access_token'] = token_info['access_token']
         request.session['spotify_refresh_token'] = token_info.get('refresh_token')
         request.session['expires_at'] = int(time.time()) + token_info['expires_in']
-        return redirect('home')
-    except spotipy.oauth2.SpotifyOauthError as e:
-        print(f"Refresh token hatası: {str(e)}")
-        request.session.flush()  # Oturumu sıfırla
-        return redirect('giris_yap')  # Kullanıcıyı tekrar girişe yönlendir
+        print("Access token başarıyla alındı:", token_info)  # Log
+        return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
     except Exception as e:
+        print(f"Access token alınamadı: {str(e)}")  # Log
         return JsonResponse({"error": f"Access token alınamadı: {str(e)}"}, status=400)
 
 # Token yenileme fonksiyonu
@@ -200,37 +194,32 @@ def search_and_add_track(request):
         if not access_token:
             return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
-        # Şarkıyı arama isteği
         search_url = 'https://api.spotify.com/v1/search'
         headers = {'Authorization': f'Bearer {access_token}'}
-        params = {
-            'q': track_name,
-            'type': 'track',
-            'limit': 1  # Sadece ilk sonucu alıyoruz
-        }
+        params = {'q': track_name, 'type': 'track', 'limit': 1}
         search_response = requests.get(search_url, headers=headers, params=params)
 
         if search_response.status_code != 200:
             return JsonResponse({"error": "Şarkı arama başarısız."}, status=400)
 
-        search_results = search_response.json()
-        tracks = search_results.get('tracks', {}).get('items', [])
-        if not tracks:
-            return JsonResponse({"error": "Şarkı bulunamadı."}, status=404)
+        try:
+            search_results = search_response.json()
+            tracks = search_results.get('tracks', {}).get('items', [])
+            if not tracks:
+                return JsonResponse({"error": "Şarkı bulunamadı."}, status=404)
 
-        # İlk şarkının URI'sini al
-        track_uri = tracks[0].get('uri')
+            track_uri = tracks[0].get('uri')
+            add_track_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+            payload = {'uris': [track_uri]}
+            add_response = requests.post(add_track_url, headers=headers, json=payload)
 
-        # Şarkıyı çalma listesine ekleme isteği
-        add_track_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
-        payload = {'uris': [track_uri]}
-        add_response = requests.post(add_track_url, headers=headers, json=payload)
-
-        if add_response.status_code == 201:  # Başarılı
-            return JsonResponse({"message": "Şarkı başarıyla eklendi!"})
-        else:
-            error_message = add_response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
+            if add_response.status_code == 201:
+                return JsonResponse({"message": "Şarkı başarıyla eklendi!"})
+            else:
+                error_message = add_response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
+                return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
+        except ValueError:
+            return JsonResponse({"error": "Spotify API yanıtı çözümlenemedi."}, status=400)
 
 # Kullanıcının çalma listelerini döndüren view
 def get_user_playlists(request):
@@ -268,8 +257,11 @@ def add_to_queue(request):
         if response.status_code == 204:  # Başarılı
             return JsonResponse({"message": "Şarkı çalma sırasına eklendi!"})
         else:
-            error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
-            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=400)
+            try:
+                error_message = response.json().get('error', {}).get('message', 'Bilinmeyen bir hata oluştu.')
+            except ValueError:
+                error_message = f"Spotify API yanıtı çözümlenemedi: {response.text}"
+            return JsonResponse({"error": f"Şarkı eklenemedi: {error_message}"}, status=response.status_code)
 
 # Şarkı arama view
 def search_tracks(request):
@@ -308,3 +300,32 @@ def get_access_token(request):
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
         request.session['spotify_access_token'] = token_info['access_token']
     return token_info['access_token']
+
+# Access token doğrulama ve yenileme fonksiyonu
+def get_valid_access_token(request):
+    access_token = request.session.get('spotify_access_token')
+    refresh_token = request.session.get('spotify_refresh_token')
+    expires_at = request.session.get('expires_at', 0)
+
+    if not access_token or int(time.time()) >= expires_at:
+        if not refresh_token:
+            print("Refresh token eksik. Kullanıcıyı tekrar giriş yapmaya yönlendiriyorum.")  # Log
+            return redirect('giris_yap')
+
+        sp_oauth = SpotifyOAuth(
+            client_id=settings.SPOTIFY_CLIENT_ID,
+            client_secret=settings.SPOTIFY_CLIENT_SECRET,
+            redirect_uri=settings.SPOTIFY_REDIRECT_URI
+        )
+
+        try:
+            token_info = sp_oauth.refresh_access_token(refresh_token)
+            access_token = token_info['access_token']
+            request.session['spotify_access_token'] = access_token
+            request.session['expires_at'] = int(time.time()) + token_info['expires_in']
+            print("Access token yenilendi:", access_token)  # Log
+        except Exception as e:
+            print(f"Token yenileme hatası: {str(e)}")  # Log
+            return redirect('giris_yap')
+
+    return access_token
