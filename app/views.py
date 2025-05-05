@@ -12,6 +12,17 @@ CLIENT_SECRET = "8cf45756c2494cf9a692cc41666b22c0"
 REDIRECT_URI = 'https://spotify-cafe.onrender.com/callback/'  # bu önemli!
 SPOTIFY_API_URL = 'https://accounts.spotify.com/api/token'
 
+# Spotify OAuth ayarları
+sp_oauth = SpotifyOAuth(
+    client_id=settings.SPOTIFY_CLIENT_ID,
+    client_secret=settings.SPOTIFY_CLIENT_SECRET,
+    redirect_uri=settings.SPOTIFY_REDIRECT_URI,
+    scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+)
+
+# Spotify bağlantısı
+sp = spotipy.Spotify(auth_manager=sp_oauth)
+
 def home(request):
     access_token = request.session.get('spotify_access_token')
     return render(request, 'app/index.html', {'is_logged_in': bool(access_token)})
@@ -284,14 +295,26 @@ def search_tracks(request):
     if not query:
         return JsonResponse({"error": "Lütfen bir şarkı adı girin."}, status=400)
 
-    # Spotify arama kodu buraya gelecek
-    # Spotify API'ye arama query gönderilir
-    response = sp.search(q=query, type='track', limit=5)
-    if response['tracks']['items']:
-        return JsonResponse(response['tracks']['items'], safe=False)
-    else:
-        return JsonResponse({"error": "Şarkı bulunamadı. Lütfen farklı bir terimle arama yapın."}, status=404)
-
+    try:
+        # Spotify API'ye arama query gönderilir
+        response = sp.search(q=query, type='track', limit=5)
+        
+        # Eğer sonuç varsa, JSON formatında döndürülür
+        if response['tracks']['items']:
+            tracks = [
+                {
+                    "name": track["name"],
+                    "artist": track["artists"][0]["name"],
+                    "album": track["album"]["name"],
+                    "uri": track["uri"]
+                }
+                for track in response['tracks']['items']
+            ]
+            return JsonResponse({"tracks": tracks}, safe=False)
+        else:
+            return JsonResponse({"error": "Şarkı bulunamadı. Lütfen farklı bir terimle arama yapın."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"Bir hata oluştu: {str(e)}"}, status=500)
 
 # Access token alma view
 def get_access_token(request):
