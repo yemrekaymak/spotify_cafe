@@ -67,6 +67,20 @@ a:hover {
     height: auto;
 }
 
+.redirect-button{
+    list-style-type: none;
+    text-decoration: none;
+    background-color: #1db954;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 24px;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
 /* Responsif Tasarım */
 @media (max-width: 768px) {
     body {
