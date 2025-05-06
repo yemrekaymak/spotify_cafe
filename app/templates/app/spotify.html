@@ -171,29 +171,21 @@
 
 
         async function getTopTracks() {
-            fetch('/get-top-tracks/') // Sends a GET request to the endpoint
-            .then(response => {
-                if (!response.ok) { // Checks if the response status is not OK (e.g., 404, 500)
-                    throw new Error('Spotify verisi alınamadı.'); // Throws an error if the response is invalid
-                }
-                return response.json(); // Parses the response as JSON
-            })
-            .then(data => {
-                if (data.tracks && data.tracks.length > 0) { // Checks if the response contains tracks
-                    console.log(data.tracks); // Logs the tracks to the console
-                    // The commented-out code below would dynamically create HTML elements for each track
-                    // data.tracks.forEach(track => {
-                    //     const div = document.createElement('div');
-                    //     div.innerHTML = `
-                    //         <img src="${track.image}" alt="${track.name}" style="width:100px; height:100px;">
-                    //         <p><strong>${track.name}</strong> - ${track.artist}</p>
-                    //         <hr>
-                    //     `;
-                }
-            })
-            .catch(error => {
-                console.error(error); // Logs any errors that occur during the fetch or processing
+            const response = await fetch('/get-top-tracks/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+
+                });
             });
+
+            const result = await response.json();
+            if (result.message) {
+                alert(result.tracks);
+            }
         }
 
     </script>
