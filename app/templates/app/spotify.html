@@ -82,6 +82,14 @@
         .result-item button:hover {
             background-color: #1ed760;
         }
+
+        #top-tracks {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #121212;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -128,6 +136,8 @@
                     <p>🚨 Şarkı bulunamadı.</p>
                 {% endif %}
             </div>
+            <!-- Top 5 Tracks Container -->
+            <div id="top-tracks"></div>
         </div>
     </div>
 
@@ -168,7 +178,6 @@
                 }
             });
         }
-
 
         async function getTopTracks() {
             const response = await fetch('/get-top-tracks/?limit=5');
