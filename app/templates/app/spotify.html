@@ -126,7 +126,7 @@
 
             <div class="search-results" id="search-results">
                 {% if tracks %}
-                    <ul>
+                    <ul class="search-list">
                         {% for track in tracks %}
                         <li class="result-item" data-uri="{{ track.uri }}">
                             {{ track.name }} - {{ track.artists.0.name }}
