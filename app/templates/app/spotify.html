@@ -171,20 +171,13 @@
 
 
         async function getTopTracks() {
-            const response = await fetch('/get-top-tracks/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-
-                });
-            });
-
+            const response = await fetch('/get-top-tracks/?limit=10');
             const result = await response.json();
-            if (result.message) {
-                alert(result.tracks);
+            
+            if (result.tracks && result.tracks.length > 0) {
+                console.log(result.tracks);
+            } else {
+                console.error('Veri alınamadı:', result.error);
             }
         }
 

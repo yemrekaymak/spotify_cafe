@@ -264,19 +264,28 @@ def get_valid_access_token(request):
 def get_top_tracks(request):
     if request.method != "GET":
         return JsonResponse({"error": "Sadece GET istekleri destekleniyor."}, status=405)
+
     access_token = request.session.get('spotify_access_token')
     if not access_token:
         print("Access token eksik.")  # Hata ayıklama için log
         return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
+
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    url = "https://api.spotify.com/v1/me/top/tracks?limit=10"
+
+    # Limit parametresi alınıyor
+    limit = request.GET.get('limit', 10)  # Varsayılan 10
+
+    url = f"https://api.spotify.com/v1/me/top/tracks?limit={limit}"
     response = requests.get(url, headers=headers)
+
     if response.status_code != 200:
         return JsonResponse({"error": f"Spotify API hatası: {response.status_code}"}, status=response.status_code)
+
     data = response.json()
     tracks = []
+
     for track in data['items']:
         tracks.append({
             'name': track['name'],
@@ -284,4 +293,5 @@ def get_top_tracks(request):
             'uri': track['uri'],
             'image': track['album']['images'][0]['url'] if track['album']['images'] else None
         })
+
     return JsonResponse({"tracks": tracks})
