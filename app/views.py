@@ -274,7 +274,9 @@ def get_top_tracks(request):
     }
 
     limit = 5  # Sabit 5 olarak ayarladık
-    url = f"https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF?si=bf2b6a5b86484dc4?limit={limit}"
+    playlist_id = "37i9dQZEVXbMDoHDwVN2tF"  # Global Top 50 playlist ID
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?limit={limit}"
+
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
@@ -285,10 +287,10 @@ def get_top_tracks(request):
 
     for track in data['items']:
         tracks.append({
-            'name': track['name'],
-            'artist': ', '.join([artist['name'] for artist in track['artists']]),
-            'uri': track['uri'],
-            'image': track['album']['images'][0]['url'] if track['album']['images'] else None
+            'name': track['track']['name'],
+            'artist': ', '.join([artist['name'] for artist in track['track']['artists']]),
+            'uri': track['track']['uri'],
+            'image': track['track']['album']['images'][0]['url'] if track['track']['album']['images'] else None
         })
 
     return JsonResponse({"tracks": tracks})
