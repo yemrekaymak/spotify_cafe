@@ -104,7 +104,8 @@ def refresh_access_token(refresh_token):
         print(f"⚠ Token yenileme hatası: {token_response.status_code}, {token_response.text}")
         return None
 
-# Arama sonuçlarını döndüren view
+
+@csrf_exempt
 def arama_sonuclari(request):
     access_token = get_valid_access_token(request)
     if isinstance(access_token, HttpResponse):
@@ -121,7 +122,18 @@ def arama_sonuclari(request):
         response = requests.get(search_url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        tracks = data.get('tracks', {}).get('items', [])
+        raw_tracks = data.get('tracks', {}).get('items', [])
+
+        # Verileri sadeleştiriyoruz
+        tracks = []
+        for track in raw_tracks:
+            tracks.append({
+                'name': track.get('name'),
+                'artist': ', '.join([artist['name'] for artist in track.get('artists', [])]),
+                'image': track.get('album', {}).get('images', [{}])[0].get('url', None),
+                'uri': track.get('uri')
+            })
+
         return render(request, 'app/arama_sonuclari.html', {'tracks': tracks})
     except requests.exceptions.RequestException as e:
         return render(request, 'app/arama_sonuclari.html', {'error': f"Spotify API isteği başarısız: {str(e)}"})
