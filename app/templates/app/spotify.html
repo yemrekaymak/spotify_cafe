@@ -113,7 +113,7 @@
     <div class="container">
         <div class="left-section">
             <h1>🎵 Spotify Bölümleri</h1>
-            <ul>
+            <ul class="nav-list">
                 <li><a onclick="getTopTracks()" href="#">Top 5 Şarkılar</a></li>
                 <li><a href="#">Top 5 Sanatçılar</a></li>
             </ul>
@@ -190,7 +190,7 @@
                 const result = await response.json();
                 console.log(result);
                 // Eğer 'top-tracks' elementini bulamazsak
-                const resultsContainer = document.getElementById('top-tracks');
+                const resultsContainer = document.querySelector('.nav-list');
                 if (!resultsContainer) {
                     console.error("Error: 'top-tracks' element not found!");
                     return;
@@ -202,9 +202,7 @@
                     return;
                 }
         
-                resultsContainer.innerHTML = ''; // Önceki sonuçları temizle
         
-                // Her bir şarkıyı işleyelim
                 result.tracks.forEach(track => {
                     const trackElement = document.createElement('div');
                     trackElement.classList.add('result-item');
@@ -217,7 +215,6 @@
                 });
             } catch (error) {
                 console.error('Veri alınamadı:', error.message);
-                const resultsContainer = document.getElementById('top-tracks');
                 if (resultsContainer) {
                     resultsContainer.innerHTML = `<p>🚨 Hata oluştu: ${error.message}</p>`;
                 }
