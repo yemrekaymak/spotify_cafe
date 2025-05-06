@@ -186,9 +186,9 @@
                 if (!response.ok) {
                     throw new Error(`HTTP hatası: ${response.status}`);
                 }
-        
-                const result = await response.json();
                 
+                const result = await response.json();
+                console.log(result);
                 // Eğer 'top-tracks' elementini bulamazsak
                 const resultsContainer = document.getElementById('top-tracks');
                 if (!resultsContainer) {
