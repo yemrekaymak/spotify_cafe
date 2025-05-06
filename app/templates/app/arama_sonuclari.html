@@ -13,7 +13,7 @@
             {% for track in tracks %}
                 <li>
                     <img src="{{ track.image }}" alt="{{ track.name }}" width="100">
-                    {{ track.name }} - {{ track.artists.0.name }}
+                    {{ track.name }} - {{ track.artist }}
                     <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button>
                 </li>
             {% endfor %}
