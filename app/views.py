@@ -267,16 +267,13 @@ def get_top_tracks(request):
 
     access_token = request.session.get('spotify_access_token')
     if not access_token:
-        print("Access token eksik.")  # Hata ayıklama için log
         return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
-    # Limit parametresi alınıyor
-    limit = request.GET.get('limit', 10)  # Varsayılan 10
-
+    limit = 5  # Sabit 5 olarak ayarladık
     url = f"https://api.spotify.com/v1/me/top/tracks?limit={limit}"
     response = requests.get(url, headers=headers)
 
