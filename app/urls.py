@@ -8,6 +8,7 @@ from .views import (
     get_user_data,
     sanatci_listesi,
     add_to_queue,
+    get_top_tracks,
 )
 
 urlpatterns = [
