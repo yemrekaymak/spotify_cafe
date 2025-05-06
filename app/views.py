@@ -284,12 +284,17 @@ def get_top_tracks(request):
     data = response.json()
     tracks = []
 
-    for track in data['items']:
+    for item in data.get('items', []):
+        track_info = item.get('track')
+        if not track_info:
+            continue
+
         tracks.append({
-            'name': track['track']['name'],
-            'artist': ', '.join([artist['name'] for artist in track['track']['artists']]),
-            'uri': track['track']['uri'],
-            'image': track['track']['album']['images'][0]['url'] if track['track']['album']['images'] else None
+            'name': track_info.get('name'),
+            'artist': ', '.join([artist['name'] for artist in track_info.get('artists', [])]),
+            'uri': track_info.get('uri'),
+            'image': track_info.get('album', {}).get('images', [{}])[0].get('url')
         })
+
 
     return JsonResponse({"tracks": tracks})
