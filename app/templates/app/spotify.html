@@ -174,10 +174,17 @@
             const response = await fetch('/get-top-tracks/?limit=5');
             const result = await response.json();
             
+            const resultsContainer = document.getElementById('top-tracks');
+            
+            // Eğer resultsContainer null ise, hata mesajı ver
+            if (!resultsContainer) {
+                console.error("Error: 'top-tracks' element not found!");
+                return;
+            }
+       
             if (result.tracks && result.tracks.length > 0) {
-                const resultsContainer = document.getElementById('top-tracks');
                 resultsContainer.innerHTML = ''; // Önceki sonuçları temizle
-    
+            
                 result.tracks.forEach(track => {
                     const trackElement = document.createElement('div');
                     trackElement.classList.add('result-item');
