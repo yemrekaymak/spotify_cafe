@@ -106,4 +106,21 @@ li{
         width: 100%;
         padding: 15px;
     }
+
+    .container {
+        width: 100%;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .left-section {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .right-section {
+        width: 100%;
+    }
+
+    
 }
