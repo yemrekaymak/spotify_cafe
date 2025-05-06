@@ -275,7 +275,7 @@ def get_top_tracks(request):
 
     limit = 5  # Sabit 5 olarak ayarladık
     playlist_id = "37i9dQZEVXbMDoHDwVN2tF"  # Global Top 50 playlist ID
-    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?limit={limit}"
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?limit={limit}&market=from_token"
 
     response = requests.get(url, headers=headers)
 
