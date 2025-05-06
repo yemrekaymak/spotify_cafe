@@ -22,7 +22,7 @@ sp_oauth = SpotifyOAuth(
     client_id=settings.SPOTIFY_CLIENT_ID,
     client_secret=settings.SPOTIFY_CLIENT_SECRET,
     redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-    scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+    scope="user-modify-playback-state playlist-modify-public playlist-modify-private user-top-read"
 )
 
 # Spotify bağlantısı
@@ -42,7 +42,7 @@ def giris_yap(request):
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-        scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+        scope="user-modify-playback-state playlist-modify-public playlist-modify-private user-top-read"
     )
     auth_url = sp_oauth.get_authorize_url()
     return redirect(auth_url)
@@ -57,7 +57,7 @@ def callback(request):
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
         redirect_uri='https://spotify-cafe.onrender.com/callback/',
-        scope="user-read-private user-read-email user-modify-playback-state playlist-modify-public playlist-modify-private"
+        scope="user-read-private user-read-email user-modify-playback-state playlist-modify-public playlist-modify-private user-top-read"
     )
 
     code = request.GET.get('code')
@@ -223,7 +223,7 @@ def get_access_token(request):
         client_id=settings.SPOTIFY_CLIENT_ID,
         client_secret=settings.SPOTIFY_CLIENT_SECRET,
         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-        scope="user-modify-playback-state playlist-modify-public playlist-modify-private"
+        scope="user-modify-playback-state playlist-modify-public playlist-modify-private user-top-read"
     )
     token_info = sp_oauth.get_cached_token()
     if not token_info or sp_oauth.is_token_expired(token_info):
