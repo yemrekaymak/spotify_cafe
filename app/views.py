@@ -295,6 +295,6 @@ def get_top_tracks(request):
             'uri': track_info.get('uri'),
             'image': track_info.get('album', {}).get('images', [{}])[0].get('url')
         })
-    print("Alınan şarkılar:", tracks)
 
+    print("Alınan şarkılar:", tracks)
     return JsonResponse({"tracks": tracks})
