@@ -260,36 +260,28 @@ def get_valid_access_token(request):
 
     return access_token
 
-
 @csrf_exempt
 def get_top_tracks(request):
     if request.method != "GET":
         return JsonResponse({"error": "Sadece GET istekleri destekleniyor."}, status=405)
-
     access_token = request.session.get('spotify_access_token')
     if not access_token:
-        return JsonResponse({"error": "Access token bulunamadı. Lütfen giriş yapın."}, status=401)
-
+        print("Access token eksik.")  # Hata ayıklama için log
+        return JsonResponse({"error": "Spotify'a giriş yapmanız gerekiyor."}, status=401)
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-
-    url = "https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=5"
+    url = "https://api.spotify.com/v1/me/top/tracks?limit=10"
     response = requests.get(url, headers=headers)
-
     if response.status_code != 200:
         return JsonResponse({"error": f"Spotify API hatası: {response.status_code}"}, status=response.status_code)
-
     data = response.json()
     tracks = []
-
-    for item in data['items']:
-        track = item['track']
+    for track in data['items']:
         tracks.append({
             'name': track['name'],
             'artist': ', '.join([artist['name'] for artist in track['artists']]),
             'uri': track['uri'],
             'image': track['album']['images'][0]['url'] if track['album']['images'] else None
         })
-
     return JsonResponse({"tracks": tracks})
