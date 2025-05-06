@@ -204,7 +204,8 @@
                     return;
                 }
         
-        
+                resultsContainer.innerHTML = '';
+
                 result.tracks.forEach(track => {
                     const trackElement = document.createElement('div');
                     trackElement.classList.add('result-item');
