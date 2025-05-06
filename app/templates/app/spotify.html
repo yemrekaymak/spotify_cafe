@@ -180,20 +180,31 @@
         }
 
         async function getTopTracks() {
-            const response = await fetch('/get-top-tracks/?limit=5');
-            const result = await response.json();
-            
-            const resultsContainer = document.getElementById('top-tracks');
-            
-            // Eğer resultsContainer null ise, hata mesajı ver
-            if (!resultsContainer) {
-                console.error("Error: 'top-tracks' element not found!");
-                return;
-            }
-       
-            if (result.tracks && result.tracks.length > 0) {
+            try {
+                const response = await fetch('/get-top-tracks/?limit=5');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP hatası: ${response.status}`);
+                }
+        
+                const result = await response.json();
+                
+                // Eğer 'top-tracks' elementini bulamazsak
+                const resultsContainer = document.getElementById('top-tracks');
+                if (!resultsContainer) {
+                    console.error("Error: 'top-tracks' element not found!");
+                    return;
+                }
+        
+                // Eğer track'ler gelmediyse, hata mesajı göster
+                if (!result.tracks || result.tracks.length === 0) {
+                    resultsContainer.innerHTML = '<p>🚨 Şarkılar alınamadı veya liste boş.</p>';
+                    return;
+                }
+        
                 resultsContainer.innerHTML = ''; // Önceki sonuçları temizle
-            
+        
+                // Her bir şarkıyı işleyelim
                 result.tracks.forEach(track => {
                     const trackElement = document.createElement('div');
                     trackElement.classList.add('result-item');
@@ -204,8 +215,12 @@
                     `;
                     resultsContainer.appendChild(trackElement);
                 });
-            } else {
-                console.error('Veri alınamadı:', result.error);
+            } catch (error) {
+                console.error('Veri alınamadı:', error.message);
+                const resultsContainer = document.getElementById('top-tracks');
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = `<p>🚨 Hata oluştu: ${error.message}</p>`;
+                }
             }
         }
 
