@@ -274,8 +274,8 @@ def get_top_tracks(request):
     }
 
     limit = 5  # Sabit 5 olarak ayarladık
-    url = f"https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF?si=b5333e17084f4285?limit={limit}"
-    response = requests.get(url, headers=headers)  /
+    url = f"https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF?si=bf2b6a5b86484dc4?limit={limit}"
+    response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
         return JsonResponse({"error": f"Spotify API hatası: {response.status_code}"}, status=response.status_code)
