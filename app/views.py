@@ -285,12 +285,12 @@ def get_top_tracks(request):
     tracks = []
 
     for track_info in data.get('items', []):
-    tracks.append({
-        'name': track_info.get('name'),
-        'artist': ', '.join([artist['name'] for artist in track_info.get('artists', [])]),
-        'uri': track_info.get('uri'),
-        'image': track_info.get('album', {}).get('images', [{}])[0].get('url')
-    })
+        tracks.append({
+            'name': track_info.get('name'),
+            'artist': ', '.join([artist['name'] for artist in track_info.get('artists', [])]),
+            'uri': track_info.get('uri'),
+            'image': track_info.get('album', {}).get('images', [{}])[0].get('url')
+        })
 
 
     print("Alınan şarkılar:", tracks)
