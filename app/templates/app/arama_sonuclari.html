@@ -11,10 +11,10 @@
     {% elif tracks %}
         <ul>
             {% for track in tracks %}
-                <li>
-                    <img src="{{ track.image }}" alt="{{ track.name }}" width="100">
-                    {{ track.name }} - {{ track.artist }}
-                    <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button>
+                <li class="result-item">
+                    <img src="{{ track.image }}" alt="{{ track.name }}" width="50" height="50">
+                    <span>{{ track.name }} - {{ track.artist }}</span>
+                    <button onclick="addToQueue('{{ track.uri }}')">➕ Çalma Sırasına Ekle</button> 
                 </li>
             {% endfor %}
         </ul>
