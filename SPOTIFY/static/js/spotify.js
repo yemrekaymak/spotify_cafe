@@ -99,7 +99,7 @@ async function addToQueue(trackUri) {
 
 
 async function getTopSongs(){
-    fetch('/get_top_tracks/')
+    fetch('/get-top-tracks/')
     .then(response => {
         if (!response.ok) {
             throw new Error('Spotify verisi alınamadı.');
